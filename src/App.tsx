@@ -1,9 +1,19 @@
 import './App.css'
 
-function App() {
 
-  return (
-		<div>			<h1 className='text-3xl text-amber-200  font-bold underline'> Hello world! </h1>
+import { ExpenseList } from './components/ExpenseList'
+
+// import { Header } from '@/components/Header'
+// import { ExpenseList } from '@/components/ExpenseList'
+import { Header } from './components/Header'
+
+function App() {
+	return (
+		<div className='mx-auto max-w-md p-4 space-y-4'>
+			<Header />
+
+			{/* В будущем здесь будут вкладки: -, +, кредиты, сбережения, аналитика */}
+			<ExpenseList />
 		</div>
 	)
 }
