@@ -3,3 +3,6 @@ export type ExpenseCategory = {
 	title: string
 	amount: number
 }
+
+
+export type Tab = 1 | 2 | 3 | 4 | 5

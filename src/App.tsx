@@ -1,21 +1,27 @@
 import './App.css'
 
+import { useState } from 'react'
+import type { Tab } from '@/types/tab'
 
-import { ExpenseList } from './components/ExpenseList'
+import { Header } from '@/components/Header'
+import { ExpenseList } from '@/features/expenses/ExpenseList'
+import { IncomeList } from '@/features/incomes/IncomeList'
+import { CreditList } from '@/features/credits/CreditList'
+import { SavingsList } from '@/features/savings/SavingsList'
+import { Analytics } from '@/features/analytics/Analytics'
 
-// import { Header } from '@/components/Header'
-// import { ExpenseList } from '@/components/ExpenseList'
-import { Header } from './components/Header'
+export default function App() {
+	const [activeTab, setActiveTab] = useState<Tab>(1)
 
-function App() {
 	return (
-		<div className='mx-auto max-w-md p-4 space-y-4'>
-			<Header />
+		<div className='max-w-md mx-auto p-3 space-y-4'>
+			<Header activeTab={activeTab} onChange={setActiveTab} />
 
-			{/* В будущем здесь будут вкладки: -, +, кредиты, сбережения, аналитика */}
-			<ExpenseList />
+			{activeTab === 1 && <ExpenseList />}
+			{activeTab === 2 && <IncomeList />}
+			{activeTab === 3 && <CreditList />}
+			{activeTab === 4 && <SavingsList />}
+			{activeTab === 5 && <Analytics />}
 		</div>
 	)
 }
-
-export default App

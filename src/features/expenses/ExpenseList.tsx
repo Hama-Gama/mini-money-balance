@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { ExpenseCategory } from '@/types'
-import { AddExpenseDialog } from './AddExpenseDialog'
+import type { ExpenseCategory } from '@/features/expenses/types'
+import { AddExpenseDialog } from '@/features/expenses/AddExpenseDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { nanoid } from 'nanoid'
@@ -37,7 +37,6 @@ export const ExpenseList = () => {
 		setExpenses(prev => prev.filter(e => e.id !== id))
 	}
 
-
 	const total = expenses.reduce((sum, e) => sum + e.amount, 0)
 
 	// ✅ сохранение в localStorage
@@ -47,19 +46,22 @@ export const ExpenseList = () => {
 
 	return (
 		<div className='space-y-4'>
-			<div
-				className='
-    text-xl
-    font-bold
-    flex
-    justify-between
-    px-3
-    pb-2
-    border-b
-  '
-			>
-				<span>Итого</span>
-				<span>{total.toLocaleString('ru-RU')}</span>
+			<div className='w-full px-0 flex justify-end'>
+				<button
+					className='
+      bg-black
+      text-white
+      text-xl
+      font-bold
+      py-1
+      px-5
+      rounded-xl
+      tracking-wide
+      shadow-sm
+    '
+				>
+					{total.toLocaleString('ru-RU')}
+				</button>
 			</div>
 
 			<div>
