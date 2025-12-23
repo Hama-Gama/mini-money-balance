@@ -39,8 +39,19 @@ export const ExpenseList = () => {
 
 	return (
 		<div className='space-y-4'>
-			<div className='text-xl font-bold'>
-				Итого: {total.toLocaleString('ru-RU')}
+			<div
+				className='
+    text-xl
+    font-bold
+    flex
+    justify-between
+    px-3
+    pb-2
+    border-b
+  '
+			>
+				<span>Итого</span>
+				<span>{total.toLocaleString('ru-RU')}</span>
 			</div>
 
 			<div>
