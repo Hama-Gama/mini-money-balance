@@ -30,6 +30,14 @@ export const ExpenseList = () => {
 	const [selected, setSelected] = useState<ExpenseCategory | null>(null)
 	const [newCategory, setNewCategory] = useState('')
 
+	const deleteExpense = (id: string) => {
+		const confirmed = window.confirm('Удалить категорию?')
+		if (!confirmed) return
+
+		setExpenses(prev => prev.filter(e => e.id !== id))
+	}
+
+
 	const total = expenses.reduce((sum, e) => sum + e.amount, 0)
 
 	// ✅ сохранение в localStorage
@@ -71,8 +79,20 @@ export const ExpenseList = () => {
               last:border-b-0
             '
 					>
-						<span>{item.title}</span>
-						<span className='font-medium'>
+						<span className='flex-1'>{item.title}</span>
+
+						<Button
+							size='icon'
+							variant='ghost'
+							onClick={e => {
+								e.stopPropagation() // ❗ не открывать диалог
+								deleteExpense(item.id)
+							}}
+						>
+							🗑
+						</Button>
+
+						<span className='font-medium min-w-[90px] text-right'>
 							{item.amount.toLocaleString('ru-RU')}
 						</span>
 					</div>
