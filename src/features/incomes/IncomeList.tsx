@@ -1,38 +1,71 @@
-import { useEffect, useState } from 'react'
-import { nanoid } from 'nanoid'
-
-type Income = {
-	id: string
-	title: string
-	amount: number
-}
-
-const STORAGE_KEY = 'incomes'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { AddIncomeDialog } from '@/features/incomes/AddIncomeDialog'
+import { useIncomesStore } from '@/features/incomes/incomes.store'
 
 export const IncomeList = () => {
-	const [incomes, setIncomes] = useState<Income[]>(() => {
-		const saved = localStorage.getItem(STORAGE_KEY)
-		return saved ? JSON.parse(saved) : []
-	})
+	const { incomes, addIncome, removeIncome, getTotal } = useIncomesStore()
 
-	const total = incomes.reduce((s, i) => s + i.amount, 0)
+	const [open, setOpen] = useState(false)
 
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(incomes))
-	}, [incomes])
+	const total = getTotal()
 
 	return (
 		<div className='space-y-4'>
-			<div className='text-right font-bold text-xl'>
-				{total.toLocaleString('ru-RU')}
+			{/* Header */}
+			<div className='flex items-center justify-between'>
+				<h2 className='text-xl font-bold'>Доходы</h2>
+				<button
+					className='
+            bg-black
+            text-white
+            text-xl
+            font-bold
+            py-1
+            px-5
+            rounded-xl
+            tracking-wide
+            shadow-sm
+          '
+				>
+					{total.toLocaleString('ru-RU')}
+				</button>
 			</div>
 
-			{incomes.map(i => (
-				<div key={i.id} className='flex justify-between border-b py-2'>
-					<span>{i.title}</span>
-					<span>{i.amount}</span>
-				</div>
-			))}
+			{/* Список доходов */}
+			<div>
+				{incomes.map(income => (
+					<div
+						key={income.id}
+						className='flex justify-between items-center border-b py-2'
+					>
+						<span>{income.title}</span>
+
+						<div className='flex items-center gap-2'>
+							<span className='font-medium'>
+								{income.amount.toLocaleString('ru-RU')}
+							</span>
+
+							<Button
+								size='icon'
+								variant='ghost'
+								onClick={() => removeIncome(income.id)}
+							>
+								🗑
+							</Button>
+						</div>
+					</div>
+				))}
+			</div>
+
+			{/* Добавить доход */}
+			<Button onClick={() => setOpen(true)}>Добавить доход</Button>
+
+			<AddIncomeDialog
+				open={open}
+				onClose={() => setOpen(false)}
+				onSubmit={amount => addIncome(amount)}
+			/>
 		</div>
 	)
 }

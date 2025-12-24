@@ -1,4 +1,5 @@
-import type { Tab } from '@/features/expenses/types'
+// import type { Tab } from '@/features/expenses/types'
+import type { Tab } from '@/types/tab'
 
 type Props = {
 	activeTab: Tab

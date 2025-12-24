@@ -1,69 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ExpenseCategory } from '@/features/expenses/types'
 import { AddExpenseDialog } from '@/features/expenses/AddExpenseDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { nanoid } from 'nanoid'
-
-const STORAGE_KEY = 'expenses'
+import { useExpensesStore } from '@/features/expenses/expenses.store'
 
 export const ExpenseList = () => {
-	const [expenses, setExpenses] = useState<ExpenseCategory[]>(() => {
-		const saved = localStorage.getItem(STORAGE_KEY)
-		if (saved) {
-			try {
-				return JSON.parse(saved)
-			} catch {
-				return []
-			}
-		}
-		return [
-			{ id: nanoid(), title: 'Продукты - Дом', amount: 35000 },
-			{ id: nanoid(), title: 'Еда - работа', amount: 25000 },
-			{ id: nanoid(), title: 'Еда - улица', amount: 15000 },
-			{ id: nanoid(), title: 'Кафе', amount: 12000 },
-			{ id: nanoid(), title: 'Сотовая связь', amount: 1000 },
-			{ id: nanoid(), title: 'Одежда', amount: 15000 },
-		]
-	})
+	const { expenses, addCategory, addExpense, removeCategory, getTotal } =
+		useExpensesStore()
 
 	const [selected, setSelected] = useState<ExpenseCategory | null>(null)
 	const [newCategory, setNewCategory] = useState('')
 
-	const deleteExpense = (id: string) => {
-		const confirmed = window.confirm('Удалить категорию?')
-		if (!confirmed) return
+	const total = getTotal()
 
-		setExpenses(prev => prev.filter(e => e.id !== id))
+	const handleAddCategory = () => {
+		if (!newCategory) return
+		addCategory(newCategory)
+		setNewCategory('')
 	}
 
-	const total = expenses.reduce((sum, e) => sum + e.amount, 0)
-
-	// ✅ сохранение в localStorage
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
-	}, [expenses])
+	const handleDelete = (id: string) => {
+		const confirmed = window.confirm('Удалить категорию?')
+		if (!confirmed) return
+		removeCategory(id)
+	}
 
 	return (
 		<div className='space-y-4'>
+			{/* Total */}
 			<div className='w-full px-0 flex justify-end'>
 				<button
 					className='
-      bg-black
-      text-white
-      text-xl
-      font-bold
-      py-1
-      px-5
-      rounded-xl
-      tracking-wide
-      shadow-sm
-    '
+            bg-black
+            text-white
+            text-xl
+            font-bold
+            py-1
+            px-5
+            rounded-xl
+            tracking-wide
+            shadow-sm
+          '
 				>
 					{total.toLocaleString('ru-RU')}
 				</button>
 			</div>
 
+			{/* Список категорий */}
 			<div>
 				{expenses.map(item => (
 					<div
@@ -87,8 +71,8 @@ export const ExpenseList = () => {
 							size='icon'
 							variant='ghost'
 							onClick={e => {
-								e.stopPropagation() // ❗ не открывать диалог
-								deleteExpense(item.id)
+								e.stopPropagation()
+								handleDelete(item.id)
 							}}
 						>
 							🗑
@@ -101,6 +85,7 @@ export const ExpenseList = () => {
 				))}
 			</div>
 
+			{/* Добавление категории */}
 			<div className='flex gap-2'>
 				<Input
 					placeholder='Новая категория'
@@ -108,31 +93,18 @@ export const ExpenseList = () => {
 					onChange={e => setNewCategory(e.target.value)}
 					className='text-xl flex-1 p-2'
 				/>
-				<Button
-					onClick={() => {
-						if (!newCategory) return
-						setExpenses(prev => [
-							...prev,
-							{ id: nanoid(), title: newCategory, amount: 0 },
-						])
-						setNewCategory('')
-					}}
-				>
-					Добавить
-				</Button>
+				<Button onClick={handleAddCategory}>Добавить</Button>
 			</div>
 
+			{/* Диалог добавления расхода */}
 			{selected && (
 				<AddExpenseDialog
 					open
 					title={selected.title}
 					onClose={() => setSelected(null)}
 					onSubmit={amount => {
-						setExpenses(prev =>
-							prev.map(e =>
-								e.id === selected.id ? { ...e, amount: e.amount + amount } : e
-							)
-						)
+						addExpense(selected.id, amount)
+						setSelected(null)
 					}}
 				/>
 			)}
