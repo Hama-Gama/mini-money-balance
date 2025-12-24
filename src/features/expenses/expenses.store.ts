@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
-import type { ExpenseCategory } from '@/types'
+// import type { ExpenseCategory } from '@/types'
+import type { ExpenseCategory } from './types'
 
 const STORAGE_KEY = 'expenses'
 

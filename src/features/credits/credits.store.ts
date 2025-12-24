@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
-import type { Credit } from './types'
-
 
 export type Credit = {
 	id: string

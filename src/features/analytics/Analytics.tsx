@@ -1,10 +1,5 @@
 import { useEffect, useState } from 'react'
 
-type Expense = { amount: number }
-type Income = { amount: number }
-type Credit = { amount: number }
-type Saving = { amount: number }
-
 type AnalyticsData = {
 	expenses: number
 	incomes: number
