@@ -12,13 +12,15 @@ const getSum = (key: string): number => {
 	try {
 		const data = JSON.parse(localStorage.getItem(key) || '[]')
 		return data.reduce(
-			(sum: number, item: { amount: number }) => sum + item.amount,
+			(sum: number, item: { amount?: number }) =>
+				sum + (Number(item.amount) || 0),
 			0
 		)
 	} catch {
 		return 0
 	}
 }
+
 
 export const Analytics = () => {
 	const [data, setData] = useState<AnalyticsData | null>(null)
