@@ -1,53 +1,51 @@
 import { useState } from 'react'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 type Props = {
 	open: boolean
 	onClose: () => void
-	onSubmit: (amount: number) => void
-	title?: string
+	onSubmit: (title: string, amount: number) => void
 }
 
-export const AddIncomeDialog = ({
-	open,
-	onClose,
-	onSubmit,
-	title = 'Добавить доход',
-}: Props) => {
-	const [value, setValue] = useState('')
+export const AddIncomeDialog = ({ open, onClose, onSubmit }: Props) => {
+	const [title, setTitle] = useState('')
+	const [amount, setAmount] = useState('')
 
-	const handleSubmit = () => {
-		const amount = Number(value)
-		if (!amount) return
-		onSubmit(amount)
-		setValue('')
-		onClose()
-	}
+	if (!open) return null
 
 	return (
-		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-				</DialogHeader>
+		<div className='space-y-3'>
+			<Input
+				placeholder='Источник дохода (Зарплата, Фриланс...)'
+				value={title}
+				onChange={e => setTitle(e.target.value)}
+			/>
 
-				<Input
-					type='number'
-					placeholder='Введите сумму'
-					value={value}
-					onChange={e => setValue(e.target.value)}
-					autoFocus
-				/>
+			<Input
+				type='number'
+				placeholder='Сумма'
+				value={amount}
+				onChange={e => setAmount(e.target.value)}
+			/>
 
-				<Button onClick={handleSubmit}>Добавить</Button>
-			</DialogContent>
-		</Dialog>
+			<div className='flex gap-2'>
+				<Button
+					onClick={() => {
+						if (!title || !amount) return
+						onSubmit(title, Number(amount))
+						setTitle('')
+						setAmount('')
+						onClose()
+					}}
+				>
+					Добавить
+				</Button>
+
+				<Button variant='outline' onClick={onClose}>
+					Отмена
+				</Button>
+			</div>
+		</div>
 	)
 }

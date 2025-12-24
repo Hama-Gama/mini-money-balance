@@ -26,15 +26,14 @@ export const useIncomesStore = () => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(incomes))
 	}, [incomes])
 
-	const addIncome = (amount: number, title = 'Доход') => {
-		setIncomes(prev => [
-			...prev,
-			{
-				id: nanoid(),
-				title,
-				amount,
-			},
-		])
+	const addIncome = (title: string, amount: number) => {
+		const newIncome = {
+			id: nanoid(),
+			title,
+			amount,
+		}
+		setIncomes(prev => [...prev, newIncome])
+		return newIncome
 	}
 
 	const removeIncome = (id: string) => {

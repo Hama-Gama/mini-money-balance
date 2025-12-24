@@ -73,7 +73,7 @@ export const IncomeList = () => {
 			<AddIncomeDialog
 				open={open}
 				onClose={() => setOpen(false)}
-				onSubmit={amount => addIncome(amount)}
+				onSubmit={(title, amount) => addIncome(title, amount)}
 			/>
 		</div>
 	)
