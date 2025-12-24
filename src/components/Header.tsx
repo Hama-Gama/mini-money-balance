@@ -27,7 +27,7 @@ export const Header = ({ activeTab, onChange }: Props) => {
 					{weekNumber}
 				</div>
 
-				<div className='text-sm text-muted-foreground'>
+				<div className='text-base text-muted-foreground'>
 					{date.toLocaleDateString('ru-RU', {
 						weekday: 'short',
 						day: 'numeric',

@@ -3,8 +3,17 @@ import { Button } from '@/components/ui/button'
 import { AddIncomeDialog } from '@/features/incomes/AddIncomeDialog'
 import { useIncomesStore } from '@/features/incomes/incomes.store'
 
+
+
 export const IncomeList = () => {
 	const { incomes, addIncome, removeIncome, getTotal } = useIncomesStore()
+
+	const handleDelete = (id: string) => {
+		const confirmed = window.confirm('Удалить доход?')
+		if (!confirmed) return
+
+		removeIncome(id)
+	}
 
 	const [open, setOpen] = useState(false)
 
@@ -49,7 +58,7 @@ export const IncomeList = () => {
 							<Button
 								size='icon'
 								variant='ghost'
-								onClick={() => removeIncome(income.id)}
+								onClick={() => handleDelete(income.id)}
 							>
 								🗑
 							</Button>

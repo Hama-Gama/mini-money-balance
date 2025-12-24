@@ -17,6 +17,14 @@ export const CreditList = () => {
 		setAmount('')
 	}
 
+	const handleRemove = (id: string) => {
+		const confirmed = window.confirm('Удалить кредит?')
+		if (!confirmed) return
+
+		removeCredit(id)
+	}
+
+
 	return (
 		<div className='space-y-4'>
 			{/* Header */}
@@ -67,7 +75,7 @@ export const CreditList = () => {
 							<Button
 								size='sm'
 								variant='ghost'
-								onClick={() => removeCredit(credit.id)}
+								onClick={() => handleRemove(credit.id)}
 							>
 								🗑
 							</Button>
@@ -79,7 +87,7 @@ export const CreditList = () => {
 			{/* Добавление кредита */}
 			<div className='flex gap-2 pt-2'>
 				<Input
-					placeholder='Название кредита'
+					placeholder='Банк'
 					value={title}
 					onChange={e => setTitle(e.target.value)}
 				/>

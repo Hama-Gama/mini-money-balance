@@ -10,6 +10,14 @@ export const SavingsList = () => {
 	const [title, setTitle] = useState('')
 	const [target, setTarget] = useState('')
 
+	const handleRemove = (id: string) => {
+		const confirmed = window.confirm('Удалить цель сбережений?')
+		if (!confirmed) return
+
+		removeSaving(id)
+	}
+
+
 	return (
 		<div className='space-y-4'>
 			{/* Header */}
@@ -57,7 +65,7 @@ export const SavingsList = () => {
 							<Button
 								size='sm'
 								variant='ghost'
-								onClick={() => removeSaving(saving.id)}
+								onClick={() => handleRemove(saving.id)}
 							>
 								🗑
 							</Button>
