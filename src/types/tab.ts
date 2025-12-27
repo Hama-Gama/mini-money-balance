@@ -9,3 +9,4 @@ export const TABS = {
 	SAVINGS: 4,
 	ANALYTICS: 5,
 } as const
+

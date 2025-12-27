@@ -9,7 +9,8 @@ import { IncomeList } from '@/features/incomes/IncomeList'
 import { CreditList } from '@/features/credits/CreditList'
 import { SavingsList } from '@/features/savings/SavingsList'
 import { Analytics } from '@/features/analytics/Analytics'
-import { BottomNavigationBar } from './components/BottomNavigationBar'
+import { BottomNavigationBar } from '@/components/BottomNavigationBar'
+
 
 export default function App() {
 	const [activeTab, setActiveTab] = useState<Tab>(1)
@@ -24,10 +25,7 @@ export default function App() {
 			{activeTab === 4 && <SavingsList />}
 			{activeTab === 5 && <Analytics />}
 
-			<BottomNavigationBar 
-			  activeTab={activeTab} 
-			  onChange={setActiveTab} 
-			/>
+			<BottomNavigationBar activeTab={activeTab} onChange={setActiveTab} />
 		</div>
 	)
 }
