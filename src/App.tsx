@@ -17,7 +17,7 @@ export default function App() {
 
 	return (
 		<div className='max-w-md mx-auto p-3 space-y-4 pb-16'>
-			<Header activeTab={activeTab} onChange={setActiveTab} />
+			<Header />
 
 			{activeTab === 1 && <ExpenseList />}
 			{activeTab === 2 && <IncomeList />}
