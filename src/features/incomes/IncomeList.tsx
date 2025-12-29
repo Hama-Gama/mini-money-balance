@@ -19,6 +19,8 @@ export const IncomeList = () => {
 
 	const total = getTotal()
 
+	const sortedIncomes = [...incomes].sort((a, b) => b.amount - a.amount)
+
 	return (
 		<div className='space-y-4'>
 			{/* Header */}
@@ -43,7 +45,7 @@ export const IncomeList = () => {
 
 			{/* Список доходов */}
 			<div>
-				{incomes.map(income => (
+				{sortedIncomes.map(income => (
 					<div
 						key={income.id}
 						className='flex justify-between items-center border-b py-2'
