@@ -50,7 +50,19 @@ export const IncomeList = () => {
 						key={income.id}
 						className='flex justify-between items-center border-b py-2'
 					>
-						<span>{income.title}</span>
+						<div className='flex flex-col'>
+							<span>{income.title}</span>
+
+							{income.createdAt && (
+								<span className='text-xs text-muted-foreground'>
+									{new Date(income.createdAt).toLocaleDateString('ru-RU', {
+										day: 'numeric',
+										month: 'short',
+										year: 'numeric',
+									})}
+								</span>
+							)}
+						</div>
 
 						<div className='flex items-center gap-2'>
 							<span className='font-medium'>

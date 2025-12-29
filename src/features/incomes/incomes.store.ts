@@ -5,6 +5,7 @@ export type Income = {
 	id: string
 	title: string
 	amount: number
+	createdAt: number
 }
 
 const STORAGE_KEY = 'incomes'
@@ -31,6 +32,7 @@ export const useIncomesStore = () => {
 			id: nanoid(),
 			title,
 			amount,
+			createdAt: Date.now(),
 		}
 		setIncomes(prev => [...prev, newIncome])
 		return newIncome
