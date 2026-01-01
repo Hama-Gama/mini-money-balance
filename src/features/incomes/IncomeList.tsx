@@ -2,48 +2,33 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AddIncomeDialog } from '@/features/incomes/AddIncomeDialog'
 import { useIncomesStore } from '@/features/incomes/incomes.store'
-
-
+import { getMonthKey } from '@/shared/utils/month'
 
 export const IncomeList = () => {
-	const { incomes, addIncome, removeIncome, getTotal } = useIncomesStore()
-
-	const handleDelete = (id: string) => {
-		const confirmed = window.confirm('Удалить доход?')
-		if (!confirmed) return
-
-		removeIncome(id)
-	}
+	const { incomes, addIncome, removeIncome, getMonthlyTotal } =
+		useIncomesStore()
 
 	const [open, setOpen] = useState(false)
 
-	const total = getTotal()
+	const currentMonth = getMonthKey()
+	const total = getMonthlyTotal(currentMonth)
 
-	const sortedIncomes = [...incomes].sort((a, b) => b.amount - a.amount)
+	const sortedIncomes = incomes
+		.filter(i => i.month === currentMonth)
+		.sort((a, b) => b.amount - a.amount)
+
+	const handleDelete = (id: string) => {
+		if (!window.confirm('Удалить доход?')) return
+		removeIncome(id)
+	}
 
 	return (
 		<div className='space-y-4'>
-			{/* Header */}
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Доходы</h2>
-				<button
-					className='
-            bg-black
-            text-white
-            text-xl
-            font-bold
-            py-1
-            px-5
-            rounded-xl
-            tracking-wide
-            shadow-sm
-          '
-				>
-					{total.toLocaleString('ru-RU')}
-				</button>
+				<span className='font-bold'>{total.toLocaleString('ru-RU')}</span>
 			</div>
 
-			{/* Список доходов */}
 			<div>
 				{sortedIncomes.map(income => (
 					<div
@@ -52,16 +37,9 @@ export const IncomeList = () => {
 					>
 						<div className='flex flex-col'>
 							<span>{income.title}</span>
-
-							{income.createdAt && (
-								<span className='text-xs text-muted-foreground'>
-									{new Date(income.createdAt).toLocaleDateString('ru-RU', {
-										day: 'numeric',
-										month: 'short',
-										year: 'numeric',
-									})}
-								</span>
-							)}
+							<span className='text-xs text-muted-foreground'>
+								{new Date(income.createdAt).toLocaleDateString('ru-RU')}
+							</span>
 						</div>
 
 						<div className='flex items-center gap-2'>
@@ -81,13 +59,12 @@ export const IncomeList = () => {
 				))}
 			</div>
 
-			{/* Добавить доход */}
 			<Button onClick={() => setOpen(true)}>Добавить доход</Button>
 
 			<AddIncomeDialog
 				open={open}
 				onClose={() => setOpen(false)}
-				onSubmit={(title, amount) => addIncome(title, amount)}
+				onSubmit={addIncome}
 			/>
 		</div>
 	)

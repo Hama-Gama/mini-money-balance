@@ -4,11 +4,12 @@ import { Input } from '@/components/ui/input'
 import { useSavingsStore } from '@/features/savings/savings.store'
 
 export const SavingsList = () => {
-	const { savings, addSaving, addToSaving, removeSaving, getTotalSavings } =
+	const { savings, addSaving, addToSaving, removeSaving, getMonthlyTotal } =
 		useSavingsStore()
 
 	const [title, setTitle] = useState('')
 	const [target, setTarget] = useState('')
+	const total = getMonthlyTotal()
 
 	const handleRemove = (id: string) => {
 		const confirmed = window.confirm('Удалить цель сбережений?')
@@ -24,7 +25,7 @@ export const SavingsList = () => {
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Сбережения</h2>
 				<span className='font-semibold text-muted-foreground'>
-					Всего: {getTotalSavings().toLocaleString('ru-RU')}
+					Всего: {total.toLocaleString('ru-RU')}
 				</span>
 			</div>
 

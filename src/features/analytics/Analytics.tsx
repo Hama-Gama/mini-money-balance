@@ -1,70 +1,53 @@
-import { useEffect, useState } from 'react'
-
-type AnalyticsData = {
-	expenses: number
-	incomes: number
-	credits: number
-	savings: number
-	balance: number
-}
-
-const getSum = (key: string): number => {
-	try {
-		const data = JSON.parse(localStorage.getItem(key) || '[]')
-		return data.reduce(
-			(sum: number, item: { amount?: number }) =>
-				sum + (Number(item.amount) || 0),
-			0
-		)
-	} catch {
-		return 0
-	}
-}
-
+import { useState } from 'react'
+import { getMonthKey } from '@/shared/utils/month'
+import { useIncomesStore } from '@/features/incomes/incomes.store'
+import { useSavingsStore } from '@/features/savings/savings.store'
+import { useCreditsStore } from '@/features/credits/credits.store'
 
 export const Analytics = () => {
-	const [data, setData] = useState<AnalyticsData | null>(null)
+	const [month, setMonth] = useState(getMonthKey())
 
-	useEffect(() => {
-		const expenses = getSum('expenses')
-		const incomes = getSum('incomes')
-		const credits = getSum('credits')
-		const savings = getSum('savings')
+	const { getMonthlyTotal: incomes } = useIncomesStore()
+	const { getMonthlyTotal: savings } = useSavingsStore()
+	const { getMonthlyPaymentTotal } = useCreditsStore()
 
-		setData({
-			expenses,
-			incomes,
-			credits,
-			savings,
-			balance: incomes - expenses - credits,
-		})
-	}, [])
+	const income = incomes(month)
+	const credit = getMonthlyPaymentTotal()
+	const saving = savings(month)
 
-	if (!data) return null
+	const creditPercent = income > 0 ? Math.round((credit / income) * 100) : 0
 
 	return (
 		<div className='space-y-4'>
 			<h2 className='text-xl font-bold'>Аналитика</h2>
 
+			<input
+				type='month'
+				value={month}
+				onChange={e => setMonth(e.target.value)}
+				className='border rounded p-1'
+			/>
+
 			<div className='grid grid-cols-2 gap-3'>
-				<Card title='Доходы' value={data.incomes} />
-				<Card title='Расходы' value={data.expenses} />
-				<Card title='Кредиты' value={data.credits} />
-				<Card title='Сбережения' value={data.savings} />
+				<Card title='Доходы' value={income} />
+				<Card title='Кредиты / мес' value={credit} />
+				<Card title='Сбережения' value={saving} />
+				<Card title='Остаток' value={income - credit - saving} />
 			</div>
 
-			<div className='border-t pt-4 flex justify-between text-lg font-semibold'>
-				<span>Баланс</span>
-				<span className={data.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-					{data.balance.toLocaleString('ru-RU')}
-				</span>
-			</div>
+			{creditPercent > 15 && (
+				<div className='p-3 rounded-xl bg-red-100 text-red-700 text-sm'>
+					⚠ Кредиты составляют {creditPercent}% дохода.
+					<br />
+					Не рекомендуется брать новые обязательства.
+				</div>
+			)}
 		</div>
 	)
 }
 
 const Card = ({ title, value }: { title: string; value: number }) => (
-	<div className='rounded-xl border p-3'>
+	<div className='border rounded-xl p-3'>
 		<div className='text-sm text-muted-foreground'>{title}</div>
 		<div className='text-lg font-bold'>{value.toLocaleString('ru-RU')}</div>
 	</div>

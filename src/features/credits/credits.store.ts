@@ -1,64 +1,46 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
-
-export type Credit = {
-	id: string
-	title: string
-	amount: number // общая сумма кредита
-	paid: number // выплачено
-}
+import type { Credit } from './types'
 
 const STORAGE_KEY = 'credits'
 
-const loadCredits = (): Credit[] => {
-	try {
-		const data = localStorage.getItem(STORAGE_KEY)
-		return data ? JSON.parse(data) : []
-	} catch {
-		return []
-	}
-}
-
 export const useCreditsStore = () => {
-	const [credits, setCredits] = useState<Credit[]>(loadCredits)
+	const [credits, setCredits] = useState<Credit[]>(() => {
+		try {
+			return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+		} catch {
+			return []
+		}
+	})
 
-	// sync с localStorage
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(credits))
 	}, [credits])
 
-	const addCredit = (title: string, amount: number) => {
+	const addCredit = (data: Omit<Credit, 'id' | 'paidAmount' | 'isClosed'>) => {
 		setCredits(prev => [
 			...prev,
 			{
+				...data,
 				id: nanoid(),
-				title,
-				amount,
-				paid: 0,
+				paidAmount: 0,
+				isClosed: false,
 			},
 		])
 	}
 
-	const payCredit = (id: string, value: number) => {
-		setCredits(prev =>
-			prev.map(c =>
-				c.id === id ? { ...c, paid: Math.min(c.paid + value, c.amount) } : c
-			)
-		)
-	}
-
-	const removeCredit = (id: string) => {
-		setCredits(prev => prev.filter(c => c.id !== id))
-	}
+	const getMonthlyPaymentTotal = () =>
+		credits.filter(c => !c.isClosed).reduce((s, c) => s + c.monthlyPayment, 0)
 
 	const getTotalDebt = () =>
-		credits.reduce((sum, c) => sum + (c.amount - c.paid), 0)
+		credits
+			.filter(c => !c.isClosed)
+			.reduce((s, c) => s + (c.totalAmount - c.paidAmount), 0)
 
 	return {
 		credits,
 		addCredit,
-		payCredit,
-		removeCredit,
+		getMonthlyPaymentTotal,
 		getTotalDebt,
 	}
 }

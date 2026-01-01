@@ -11,6 +11,8 @@ export type Income = {
 	id: string
 	title: string
 	amount: number
+	month: string
+	createdAt: number
 
 	// Опционально — для будущего расширения
 	source?: IncomeSource

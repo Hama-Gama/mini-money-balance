@@ -1,53 +1,47 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
-
-export type Income = {
-	id: string
-	title: string
-	amount: number
-	createdAt: number
-}
+import { getMonthKey } from '@/shared/utils/month'
+import type { Income } from './types'
 
 const STORAGE_KEY = 'incomes'
 
+
 const loadIncomes = (): Income[] => {
 	try {
-		const data = localStorage.getItem(STORAGE_KEY)
-		return data ? JSON.parse(data) : []
+		return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
 	} catch {
 		return []
 	}
 }
 
+
+
 export const useIncomesStore = () => {
 	const [incomes, setIncomes] = useState<Income[]>(loadIncomes)
 
-	// sync с localStorage
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(incomes))
 	}, [incomes])
 
 	const addIncome = (title: string, amount: number) => {
-		const newIncome = {
-			id: nanoid(),
-			title,
-			amount,
-			createdAt: Date.now(),
-		}
-		setIncomes(prev => [...prev, newIncome])
-		return newIncome
+		setIncomes(prev => [
+			...prev,
+			{
+				id: nanoid(),
+				title,
+				amount,
+				month: getMonthKey(),
+				createdAt: Date.now(),
+			},
+		])
 	}
 
-	const removeIncome = (id: string) => {
-		setIncomes(prev => prev.filter(i => i.id !== id))
-	}
-
-	const getTotal = () => incomes.reduce((sum, i) => sum + i.amount, 0)
+	const getMonthlyTotal = (month: string) =>
+		incomes.filter(i => i.month === month).reduce((s, i) => s + i.amount, 0)
 
 	return {
 		incomes,
 		addIncome,
-		removeIncome,
-		getTotal,
+		getMonthlyTotal,
 	}
 }

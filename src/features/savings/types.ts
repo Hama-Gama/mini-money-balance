@@ -3,4 +3,8 @@ export type Saving = {
 	title: string
 	target: number
 	current: number
+	// Сумма отложенных средств
+	amount: number
+	month: string
+	createdAt: number
 }

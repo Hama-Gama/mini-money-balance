@@ -1,30 +1,17 @@
-// Статус кредита
-export type CreditStatus = 'active' | 'closed'
-
-// Платёж по кредиту (на будущее)
-export type CreditPayment = {
-	id: string
-	amount: number
-	date: string // ISO string
-}
-
-// Основная сущность кредита
 export type Credit = {
 	id: string
-	title: string
+	bankName: string
+	bankLogo?: string
 
-	// Финансы
-	amount: number // общая сумма кредита
-	paid: number // выплачено
-	interestRate?: number // годовая ставка (%)
+	totalAmount: number
+	overpayment: number
+	monthlyPayment: number
+	months: number
 
-	// Даты
-	startDate?: string // ISO
-	endDate?: string // ISO
+	startDate: number
+	endDate: number
+	nextPaymentDate: number
 
-	// Состояние
-	status: CreditStatus
-
-	// История платежей (на будущее)
-	payments?: CreditPayment[]
+	paidAmount: number
+	isClosed: boolean
 }
