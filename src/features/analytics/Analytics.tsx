@@ -7,10 +7,12 @@ import { useCreditsStore } from '@/features/credits/credits.store'
 export const Analytics = () => {
 	const [month, setMonth] = useState(getMonthKey())
 
+	// достаём методы из стора
 	const { getMonthlyTotal: incomes } = useIncomesStore()
 	const { getMonthlyTotal: savings } = useSavingsStore()
 	const { getMonthlyPaymentTotal } = useCreditsStore()
 
+	// считаем значения
 	const income = incomes(month)
 	const credit = getMonthlyPaymentTotal()
 	const saving = savings(month)

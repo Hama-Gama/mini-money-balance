@@ -30,6 +30,8 @@ export const useSavingsStore = () => {
 		])
 	}
 
+
+
 	const getMonthlyTotal = (month: string) =>
 		savings.filter(s => s.month === month).reduce((sum, s) => sum + s.amount, 0)
 

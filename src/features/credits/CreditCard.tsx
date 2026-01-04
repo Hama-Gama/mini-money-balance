@@ -63,10 +63,6 @@ export const CreditCard = ({ credit, onPay, onClose, onRemove }: Props) => {
 				</Button>
 			</div>
 
-
-
-		
-
 		</div>
 	)
 }

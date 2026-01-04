@@ -14,10 +14,8 @@ export const SavingsList = () => {
 	const handleRemove = (id: string) => {
 		const confirmed = window.confirm('Удалить цель сбережений?')
 		if (!confirmed) return
-
 		removeSaving(id)
 	}
-
 
 	return (
 		<div className='space-y-4'>
@@ -91,7 +89,7 @@ export const SavingsList = () => {
 				<Button
 					onClick={() => {
 						if (!title || !target) return
-						addSaving(title, Number(target))
+						addSaving(title, Number(target)) // ✅ теперь сигнатура совпадает
 						setTitle('')
 						setTarget('')
 					}}

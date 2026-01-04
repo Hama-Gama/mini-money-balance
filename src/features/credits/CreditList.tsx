@@ -14,7 +14,12 @@ export const CreditList = () => {
 
 	const handleAdd = () => {
 		if (!title || !amount) return
-		addCredit(title, Number(amount))
+		addCredit({
+			bankName: title,
+			totalAmount: Number(amount),
+			monthlyPayment: Math.floor(Number(amount) / 12),
+			overpayment: 0,
+		})
 		setTitle('')
 		setAmount('')
 	}
@@ -26,7 +31,6 @@ export const CreditList = () => {
 
 	return (
 		<div className='space-y-4'>
-			{/* Header */}
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Кредиты</h2>
 				<span className='font-semibold text-muted-foreground'>
@@ -34,7 +38,6 @@ export const CreditList = () => {
 				</span>
 			</div>
 
-			{/* Список кредитов */}
 			{credits.map(credit => {
 				const rest = credit.totalAmount - credit.paidAmount
 				const progress =
@@ -98,7 +101,6 @@ export const CreditList = () => {
 				)
 			})}
 
-			{/* Кнопка календаря */}
 			<Button
 				variant='outline'
 				className='w-full'
@@ -109,14 +111,12 @@ export const CreditList = () => {
 					: 'Показать календарь платежей'}
 			</Button>
 
-			{/* Календарь */}
 			{showCalendar && (
 				<div className='pt-2'>
 					<CreditCalendar />
 				</div>
 			)}
 
-			{/* Добавление кредита */}
 			<div className='flex gap-2 pt-2'>
 				<Input
 					placeholder='Банк'
