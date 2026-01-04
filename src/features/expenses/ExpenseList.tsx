@@ -10,8 +10,6 @@ export const ExpenseList = () => {
 	const { expenses, addExpenseByTitle, removeCategory, getTotal } =
 		useExpensesStore()
 
-
-	const [selected, setSelected] = useState<ExpenseCategory | null>(null)
 	const [openAdd, setOpenAdd] = useState(false)
 
 	const total = getTotal()

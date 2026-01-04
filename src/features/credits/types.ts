@@ -1,5 +1,6 @@
 export type Credit = {
 	id: string
+
 	bankName: string
 	bankLogo?: string
 
@@ -10,18 +11,9 @@ export type Credit = {
 
 	startDate: number
 	endDate: number
-	nextPaymentDate: number
 
 	paidAmount: number
 	isClosed: boolean
+	nextPaymentDate: number
 }
 
-
-type CreditsContextType = {
-	credits: Credit[]
-	addCredit: (data: Omit<Credit, 'id' | 'paidAmount' | 'isClosed'>) => void
-	getMonthlyPaymentTotal: () => number
-	getTotalDebt: () => number
-	payCredit: (id: string, amount: number) => void // добавить
-	removeCredit: (id: string) => void // добавить
-}

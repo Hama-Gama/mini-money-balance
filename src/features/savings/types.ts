@@ -12,17 +12,9 @@
 
 
 
-	type Saving = {
+	export type Saving = {
 		id: string
 		title: string
-		target: number
 		current: number
-	}
-
-	type SavingsStore = {
-		savings: Saving[]
-		addSaving: (title: string, target: number) => void
-		addToSaving: (id: string, amount: number) => void
-		removeSaving: (id: string) => void
-		getMonthlyTotal: () => number
+		target: number
 	}

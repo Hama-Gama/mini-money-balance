@@ -14,6 +14,11 @@ const loadIncomes = (): Income[] => {
 	}
 }
 
+const removeIncome = (id: string) => {
+	setIncomes(prev => prev.filter(i => i.id !== id))
+}
+
+
 
 
 export const useIncomesStore = () => {
@@ -42,6 +47,7 @@ export const useIncomesStore = () => {
 	return {
 		incomes,
 		addIncome,
+		removeIncome,
 		getMonthlyTotal,
 	}
 }

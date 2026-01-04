@@ -30,6 +30,17 @@ export const useSavingsStore = () => {
 		])
 	}
 
+	const addToSaving = (id: string, amount: number) => {
+		setSavings(prev =>
+			prev.map(s => (s.id === id ? { ...s, current: s.current + amount } : s))
+		)
+	}
+
+	const removeSaving = (id: string) => {
+		setSavings(prev => prev.filter(s => s.id !== id))
+	}
+
+
 
 
 	const getMonthlyTotal = (month: string) =>
@@ -37,6 +48,8 @@ export const useSavingsStore = () => {
 
 	return {
 		savings,
+		addToSaving,
+		removeSaving,
 		addSaving,
 		getMonthlyTotal,
 	}

@@ -23,18 +23,6 @@ export const useExpensesStore = () => {
 	}, [expenses])
 
 
-	const addCategory = (title: string) => {
-		const category = {
-			id: nanoid(),
-			title,
-			amount: 0,
-		}
-
-		setExpenses(prev => [...prev, category])
-		return category
-	}
-
-
 	const addExpense = (id: string, value: number) => {
 		setExpenses(prev =>
 			prev.map(e => (e.id === id ? { ...e, amount: e.amount + value } : e))
