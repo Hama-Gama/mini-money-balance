@@ -1,35 +1,31 @@
 import { useState } from 'react'
 import type { ExpenseCategory } from '@/features/expenses/types'
-import { AddExpenseDialog } from '@/features/expenses/AddExpenseDialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
+import { FiPlus } from 'react-icons/fi'
+import { AddExpenseModal } from './AddExpenseModal'
+
 
 export const ExpenseList = () => {
-	const { expenses, addCategory, addExpense, removeCategory, getTotal } =
+	const { expenses, addExpenseByTitle, removeCategory, getTotal } =
 		useExpensesStore()
 
+
 	const [selected, setSelected] = useState<ExpenseCategory | null>(null)
-	const [newCategory, setNewCategory] = useState('')
+	const [openAdd, setOpenAdd] = useState(false)
 
 	const total = getTotal()
 
-	const handleAddCategory = () => {
-		if (!newCategory) return
-		addCategory(newCategory)
-		setNewCategory('')
-	}
-
 	const handleDelete = (id: string) => {
-		const confirmed = window.confirm('Удалить категорию?')
-		if (!confirmed) return
+		if (!window.confirm('Удалить категорию?')) return
 		removeCategory(id)
 	}
 
+
 	return (
-		<div className='space-y-4'>
+		<div className='space-y-4 pb-20'>
 			{/* Total */}
-			<div className='w-full px-0 flex justify-end'>
+			<div className='w-full flex justify-end'>
 				<button
 					className='
             bg-black
@@ -57,6 +53,7 @@ export const ExpenseList = () => {
               text-xl
               flex
               justify-between
+              items-center
               cursor-pointer
               px-3
               py-2
@@ -66,6 +63,10 @@ export const ExpenseList = () => {
             '
 					>
 						<span className='flex-1'>{item.title}</span>
+
+						<span className='font-medium min-w-[90px] text-right'>
+							{item.amount.toLocaleString('ru-RU')}
+						</span>
 
 						<Button
 							size='icon'
@@ -77,37 +78,42 @@ export const ExpenseList = () => {
 						>
 							🗑
 						</Button>
-
-						<span className='font-medium min-w-[90px] text-right'>
-							{item.amount.toLocaleString('ru-RU')}
-						</span>
 					</div>
 				))}
 			</div>
 
-			{/* Добавление категории */}
-			<div className='flex gap-2'>
-				<Input
-					placeholder='Новая категория'
-					value={newCategory}
-					onChange={e => setNewCategory(e.target.value)}
-					className='text-xl flex-1 p-2'
-				/>
-				<Button onClick={handleAddCategory}>Добавить</Button>
-			</div>
+			{/* Floating + button */}
+			<button
+				onClick={() => setOpenAdd(true)}
+				className='
+					fixed
+					bottom-20
+					left-1/2
+					-translate-x-1/2
+					w-14
+					h-14
+					rounded-full
+					bg-black
+					text-white
+					flex
+					items-center
+					justify-center
+					shadow-lg
+					z-50
+					active:scale-95
+					transition
+				  '
+			>
+				<FiPlus size={28} />
+			</button>
 
-			{/* Диалог добавления расхода */}
-			{selected && (
-				<AddExpenseDialog
-					open
-					title={selected.title}
-					onClose={() => setSelected(null)}
-					onSubmit={amount => {
-						addExpense(selected.id, amount)
-						setSelected(null)
-					}}
-				/>
-			)}
+			<AddExpenseModal
+				open={openAdd}
+				onClose={() => setOpenAdd(false)}
+				onSubmit={(title, amount) => {
+					addExpenseByTitle(title, amount)
+				}}
+			/>
 		</div>
 	)
 }

@@ -22,16 +22,18 @@ export const useExpensesStore = () => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
 	}, [expenses])
 
+
 	const addCategory = (title: string) => {
-		setExpenses(prev => [
-			...prev,
-			{
-				id: nanoid(),
-				title,
-				amount: 0,
-			},
-		])
+		const category = {
+			id: nanoid(),
+			title,
+			amount: 0,
+		}
+
+		setExpenses(prev => [...prev, category])
+		return category
 	}
+
 
 	const addExpense = (id: string, value: number) => {
 		setExpenses(prev =>
@@ -45,11 +47,38 @@ export const useExpensesStore = () => {
 
 	const getTotal = () => expenses.reduce((sum, e) => sum + e.amount, 0)
 
+
+const addExpenseByTitle = (title: string, amount: number) => {
+	setExpenses(prev => {
+		const existing = prev.find(c => c.title === title)
+
+		if (existing) {
+			return prev.map(c =>
+				c.id === existing.id ? { ...c, amount: c.amount + amount } : c
+			)
+		}
+
+		return [
+			...prev,
+			{
+				id: nanoid(),
+				title,
+				amount,
+			},
+		]
+	})
+}
+
+
 	return {
 		expenses,
-		addCategory,
 		addExpense,
+		addExpenseByTitle,
 		removeCategory,
 		getTotal,
 	}
 }
+
+
+
+
