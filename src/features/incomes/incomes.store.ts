@@ -5,7 +5,6 @@ import type { Income } from './types'
 
 const STORAGE_KEY = 'incomes'
 
-
 const loadIncomes = (): Income[] => {
 	try {
 		return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
@@ -13,13 +12,6 @@ const loadIncomes = (): Income[] => {
 		return []
 	}
 }
-
-const removeIncome = (id: string) => {
-	setIncomes(prev => prev.filter(i => i.id !== id))
-}
-
-
-
 
 export const useIncomesStore = () => {
 	const [incomes, setIncomes] = useState<Income[]>(loadIncomes)
@@ -39,6 +31,10 @@ export const useIncomesStore = () => {
 				createdAt: Date.now(),
 			},
 		])
+	}
+
+	const removeIncome = (id: string) => {
+		setIncomes(prev => prev.filter(i => i.id !== id))
 	}
 
 	const getMonthlyTotal = (month: string) =>

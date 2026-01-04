@@ -8,6 +8,8 @@ export type Credit = {
 	monthlyPayment: number
 	paidAmount: number
 	overpayment: number
+	months: number // срок кредита в месяцах
+	startDate: string // дата начала кредита (ISO-строка)
 }
 
 type CreditsStore = {
@@ -16,6 +18,8 @@ type CreditsStore = {
 		bankName: string
 		totalAmount: number
 		monthlyPayment: number
+		months: number
+		startDate: string
 		overpayment?: number
 	}) => void
 	payCredit: (id: string, amount: number) => void
@@ -26,7 +30,14 @@ type CreditsStore = {
 
 export const useCreditsStore = create<CreditsStore>((set, get) => ({
 	credits: [],
-	addCredit: ({ bankName, totalAmount, monthlyPayment, overpayment = 0 }) =>
+	addCredit: ({
+		bankName,
+		totalAmount,
+		monthlyPayment,
+		months,
+		startDate,
+		overpayment = 0,
+	}) =>
 		set(state => ({
 			credits: [
 				...state.credits,
@@ -37,6 +48,8 @@ export const useCreditsStore = create<CreditsStore>((set, get) => ({
 					monthlyPayment,
 					paidAmount: 0,
 					overpayment,
+					months,
+					startDate,
 				},
 			],
 		})),
@@ -64,4 +77,3 @@ export const useCreditsStore = create<CreditsStore>((set, get) => ({
 	getMonthlyPaymentTotal: () =>
 		get().credits.reduce((sum, c) => sum + c.monthlyPayment, 0),
 }))
-
