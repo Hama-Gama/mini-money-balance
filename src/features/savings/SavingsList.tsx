@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useSavingsStore } from '@/features/savings/savings.store'
+import { useSavingsStore } from './savings.store'
 
 export const SavingsList = () => {
 	const { savings, addSaving, addToSaving, removeSaving, getMonthlyTotal } =
@@ -9,17 +9,15 @@ export const SavingsList = () => {
 
 	const [title, setTitle] = useState('')
 	const [target, setTarget] = useState('')
-	const total = getMonthlyTotal()
+	const total = getMonthlyTotal(new Date().toISOString().slice(0, 7)) // текущий месяц
 
 	const handleRemove = (id: string) => {
-		const confirmed = window.confirm('Удалить цель сбережений?')
-		if (!confirmed) return
+		if (!window.confirm('Удалить цель сбережений?')) return
 		removeSaving(id)
 	}
 
 	return (
 		<div className='space-y-4'>
-			{/* Header */}
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Сбережения</h2>
 				<span className='font-semibold text-muted-foreground'>
@@ -27,7 +25,6 @@ export const SavingsList = () => {
 				</span>
 			</div>
 
-			{/* Список целей */}
 			{savings.map(saving => {
 				const progress =
 					saving.target > 0
@@ -44,7 +41,6 @@ export const SavingsList = () => {
 							</span>
 						</div>
 
-						{/* Прогресс */}
 						<div className='h-2 bg-muted rounded-full overflow-hidden'>
 							<div
 								className='h-full bg-black transition-all'
@@ -73,7 +69,6 @@ export const SavingsList = () => {
 				)
 			})}
 
-			{/* Добавление цели */}
 			<div className='flex gap-2 pt-2'>
 				<Input
 					placeholder='Цель'
@@ -89,7 +84,7 @@ export const SavingsList = () => {
 				<Button
 					onClick={() => {
 						if (!title || !target) return
-						addSaving(title, Number(target)) // ✅ теперь сигнатура совпадает
+						addSaving(title, Number(target))
 						setTitle('')
 						setTarget('')
 					}}

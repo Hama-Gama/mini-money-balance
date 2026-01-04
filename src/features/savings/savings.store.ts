@@ -1,29 +1,41 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
 import { getMonthKey } from '@/shared/utils/month'
-import type { Saving } from './types'
+
+export type Saving = {
+	id: string
+	title: string
+	target: number
+	current: number
+	month: string
+	createdAt: number
+}
 
 const STORAGE_KEY = 'savings'
 
+const loadSavings = (): Saving[] => {
+	try {
+		return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+	} catch {
+		return []
+	}
+}
+
 export const useSavingsStore = () => {
-	const [savings, setSavings] = useState<Saving[]>(() => {
-		try {
-			return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-		} catch {
-			return []
-		}
-	})
+	const [savings, setSavings] = useState<Saving[]>(loadSavings)
 
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(savings))
 	}, [savings])
 
-	const addSaving = (amount: number) => {
+	const addSaving = (title: string, target: number) => {
 		setSavings(prev => [
 			...prev,
 			{
 				id: nanoid(),
-				amount,
+				title,
+				target,
+				current: 0,
 				month: getMonthKey(),
 				createdAt: Date.now(),
 			},
@@ -40,17 +52,16 @@ export const useSavingsStore = () => {
 		setSavings(prev => prev.filter(s => s.id !== id))
 	}
 
-
-
-
 	const getMonthlyTotal = (month: string) =>
-		savings.filter(s => s.month === month).reduce((sum, s) => sum + s.amount, 0)
+		savings
+			.filter(s => s.month === month)
+			.reduce((sum, s) => sum + s.current, 0)
 
 	return {
 		savings,
+		addSaving,
 		addToSaving,
 		removeSaving,
-		addSaving,
 		getMonthlyTotal,
 	}
 }
