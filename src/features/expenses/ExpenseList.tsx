@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { ExpenseCategory } from '@/features/expenses/types'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
 import { FiPlus } from 'react-icons/fi'
@@ -46,7 +45,6 @@ export const ExpenseList = () => {
 				{expenses.map(item => (
 					<div
 						key={item.id}
-						onClick={() => setSelected(item)}
 						className='
               text-xl
               flex
