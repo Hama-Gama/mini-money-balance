@@ -19,6 +19,8 @@ export const CreditList = () => {
 			totalAmount: Number(amount),
 			monthlyPayment: Math.floor(Number(amount) / 12),
 			overpayment: 0,
+			months: 12, // например, фиксируем срок в 12 месяцев
+			startDate: new Date().toISOString(), // текущая дата в ISO-формате
 		})
 		setTitle('')
 		setAmount('')
