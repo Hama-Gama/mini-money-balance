@@ -63,11 +63,10 @@ export const ExpenseList = () => {
 						>
 							🗑
 						</Button>
-						
+
 						<span className='font-medium min-w-[90px] text-right'>
 							{item.amount.toLocaleString('ru-RU')}
 						</span>
-
 					</div>
 				))}
 			</div>
@@ -101,6 +100,7 @@ export const ExpenseList = () => {
 			</button>
 
 			{/* Modal */}
+
 			<AddExpenseModal
 				open={openAdd}
 				category={selectedCategory}
@@ -116,6 +116,7 @@ export const ExpenseList = () => {
 					}
 				}}
 			/>
+
 		</div>
 	)
 }

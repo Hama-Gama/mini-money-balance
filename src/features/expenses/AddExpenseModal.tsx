@@ -23,11 +23,13 @@ export const AddExpenseModal = ({
 
 	const handleSubmit = () => {
 		if (!amount) return
-
-		// если НОВАЯ категория — title обязателен
 		if (!category && !title) return
 
-		onSubmit(Number(amount), title)
+		if (category) {
+			onSubmit(Number(amount))
+		} else {
+			onSubmit(Number(amount), title)
+		}
 
 		setTitle('')
 		setAmount('')
@@ -37,23 +39,24 @@ export const AddExpenseModal = ({
 	return (
 		<div className='fixed inset-0 bg-black/40 z-50'>
 			<div
-				className=' 
-				absolute
-				top-4
-				left-1/2
-				-translate-x-1/2
-				bg-white
-				rounded-xl
-				p-4
-				w-[90%]
-				max-w-sm
-				space-y-3	'
+				className='
+					absolute
+					top-4
+					left-1/2
+					-translate-x-1/2
+					bg-white
+					rounded-xl
+					p-4
+					w-[90%]
+					max-w-sm
+					space-y-3
+				'
 			>
 				<h3 className='text-lg font-semibold'>
 					{category ? category.title : 'Новая категория'}
 				</h3>
 
-				{/* Название показываем ТОЛЬКО если новая категория */}
+				{/* Название — ТОЛЬКО для новой категории */}
 				{!category && (
 					<Input
 						autoFocus
@@ -63,15 +66,14 @@ export const AddExpenseModal = ({
 					/>
 				)}
 
-				{category && (
-					<Input
-						autoFocus
-						type='number'
-						placeholder='Сумма'
-						value={amount}
-						onChange={e => setAmount(e.target.value)}
-					/>
-				)}
+				{/* СУММА — ВСЕГДА */}
+				<Input
+					autoFocus={!!category}
+					type='number'
+					placeholder='Сумма'
+					value={amount}
+					onChange={e => setAmount(e.target.value)}
+				/>
 
 				<div className='flex gap-2 pt-2'>
 					<Button className='flex-1' onClick={handleSubmit}>
