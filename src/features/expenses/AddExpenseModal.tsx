@@ -48,7 +48,7 @@ export const AddExpenseModal = ({
 				w-[90%]
 				max-w-sm
 				space-y-3	'
-						>
+			>
 				<h3 className='text-lg font-semibold'>
 					{category ? category.title : 'Новая категория'}
 				</h3>
@@ -56,18 +56,22 @@ export const AddExpenseModal = ({
 				{/* Название показываем ТОЛЬКО если новая категория */}
 				{!category && (
 					<Input
+						autoFocus
 						placeholder='Название категории'
 						value={title}
 						onChange={e => setTitle(e.target.value)}
 					/>
 				)}
 
-				<Input
-					type='number'
-					placeholder='Сумма'
-					value={amount}
-					onChange={e => setAmount(e.target.value)}
-				/>
+				{category && (
+					<Input
+						autoFocus
+						type='number'
+						placeholder='Сумма'
+						value={amount}
+						onChange={e => setAmount(e.target.value)}
+					/>
+				)}
 
 				<div className='flex gap-2 pt-2'>
 					<Button className='flex-1' onClick={handleSubmit}>
