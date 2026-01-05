@@ -1,29 +1,66 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import type { ExpenseCategory } from './types'
 
 type Props = {
 	open: boolean
+	category: ExpenseCategory | null
 	onClose: () => void
-	onSubmit: (title: string, amount: number) => void
+	onSubmit: (amount: number, title?: string) => void
 }
 
-export const AddExpenseModal = ({ open, onClose, onSubmit }: Props) => {
+export const AddExpenseModal = ({
+	open,
+	category,
+	onClose,
+	onSubmit,
+}: Props) => {
 	const [title, setTitle] = useState('')
 	const [amount, setAmount] = useState('')
 
 	if (!open) return null
 
-	return (
-		<div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
-			<div className='bg-white rounded-xl p-4 w-[90%] max-w-sm space-y-3'>
-				<h3 className='text-lg font-semibold'>Новый расход</h3>
+	const handleSubmit = () => {
+		if (!amount) return
 
-				<Input
-					placeholder='Название'
-					value={title}
-					onChange={e => setTitle(e.target.value)}
-				/>
+		// если НОВАЯ категория — title обязателен
+		if (!category && !title) return
+
+		onSubmit(Number(amount), title)
+
+		setTitle('')
+		setAmount('')
+		onClose()
+	}
+
+	return (
+		<div className='fixed inset-0 bg-black/40 z-50'>
+			<div
+				className=' 
+				absolute
+				top-4
+				left-1/2
+				-translate-x-1/2
+				bg-white
+				rounded-xl
+				p-4
+				w-[90%]
+				max-w-sm
+				space-y-3	'
+						>
+				<h3 className='text-lg font-semibold'>
+					{category ? category.title : 'Новая категория'}
+				</h3>
+
+				{/* Название показываем ТОЛЬКО если новая категория */}
+				{!category && (
+					<Input
+						placeholder='Название категории'
+						value={title}
+						onChange={e => setTitle(e.target.value)}
+					/>
+				)}
 
 				<Input
 					type='number'
@@ -33,16 +70,7 @@ export const AddExpenseModal = ({ open, onClose, onSubmit }: Props) => {
 				/>
 
 				<div className='flex gap-2 pt-2'>
-					<Button
-						className='flex-1'
-						onClick={() => {
-							if (!title || !amount) return
-							onSubmit(title, Number(amount))
-							setTitle('')
-							setAmount('')
-							onClose()
-						}}
-					>
+					<Button className='flex-1' onClick={handleSubmit}>
 						Добавить
 					</Button>
 
