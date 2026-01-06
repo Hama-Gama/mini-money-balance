@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { AddIncomeDialog } from '@/features/incomes/AddIncomeDialog'
 import { useIncomesStore } from '@/features/incomes/incomes.store'
 import { getMonthKey } from '@/shared/utils/month'
+import { FiPlusCircle } from 'react-icons/fi'
 
 export const IncomeList = () => {
 	const { incomes, addIncome, removeIncome, getMonthlyTotal } =
@@ -23,30 +24,27 @@ export const IncomeList = () => {
 	}
 
 	return (
-		<div className='space-y-4'>
+		<div className='space-y-4 pb-20'>
+			{/* Header */}
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Доходы</h2>
 				<span className='font-bold'>{total.toLocaleString('ru-RU')}</span>
 			</div>
 
+			{/* List */}
 			<div>
 				{sortedIncomes.map(income => (
-					<div
-						key={income.id}
-						className='flex justify-between items-center border-b py-2'
-					>
-						<div className='flex flex-col'>
+					<div className='flex items-center border-b py-2'>
+						{/* Left — title */}
+						<div className='flex-1 flex flex-col'>
 							<span>{income.title}</span>
 							<span className='text-xs text-muted-foreground'>
 								{new Date(income.createdAt).toLocaleDateString('ru-RU')}
 							</span>
 						</div>
 
-						<div className='flex items-center gap-2'>
-							<span className='font-medium'>
-								{income.amount.toLocaleString('ru-RU')}
-							</span>
-
+						{/* Center — delete */}
+						<div className='flex justify-center w-12'>
 							<Button
 								size='icon'
 								variant='ghost'
@@ -55,12 +53,41 @@ export const IncomeList = () => {
 								🗑
 							</Button>
 						</div>
+
+						{/* Right — amount */}
+						<div className='flex-1 text-right font-medium'>
+							{income.amount.toLocaleString('ru-RU')}
+						</div>
 					</div>
 				))}
 			</div>
 
-			<Button onClick={() => setOpen(true)}>Добавить доход</Button>
+			{/* Floating + */}
+			<button
+				onClick={() => setOpen(true)}
+				className='
+					fixed
+					bottom-20
+					left-1/2
+					-translate-x-1/2
+					w-14
+					h-14
+					rounded-lg
+					bg-black
+					text-white
+					flex
+					items-center
+					justify-center
+					shadow-lg
+					z-50
+					active:scale-95
+					transition
+				'
+			>
+				<FiPlusCircle size={32} />
+			</button>
 
+			{/* Dialog */}
 			<AddIncomeDialog
 				open={open}
 				onClose={() => setOpen(false)}
