@@ -28,7 +28,7 @@ export const IncomeList = () => {
 			{/* Header */}
 			<div className='flex items-center justify-between'>
 				<h2 className='text-xl font-bold'>Доходы</h2>
-				<span className='font-bold'>{total.toLocaleString('ru-RU')}</span>
+				<span className='font-bold text-xl'>{total.toLocaleString('ru-RU')}</span>
 			</div>
 
 			{/* List */}
