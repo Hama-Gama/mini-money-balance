@@ -14,37 +14,54 @@ export const AddIncomeDialog = ({ open, onClose, onSubmit }: Props) => {
 
 	if (!open) return null
 
+	const handleSubmit = () => {
+		if (!title || !amount) return
+
+		onSubmit(title, Number(amount))
+		setTitle('')
+		setAmount('')
+		onClose()
+	}
+
 	return (
-		<div className='space-y-3'>
-			<Input
-				placeholder='Источник дохода (Зарплата, Фриланс...)'
-				value={title}
-				onChange={e => setTitle(e.target.value)}
-			/>
+		<div className='fixed inset-0 bg-black/40 z-50'>
+			<div
+				className='
+					absolute
+					top-4
+					left-1/2
+					-translate-x-1/2
+					bg-white
+					rounded-xl
+					p-4
+					w-[90%]
+					max-w-sm
+					space-y-3
+				'
+			>
+				<Input
+					autoFocus
+					placeholder='Источник дохода (Зарплата, Фриланс...)'
+					value={title}
+					onChange={e => setTitle(e.target.value)}
+				/>
 
-			<Input
-				type='number'
-				placeholder='Сумма'
-				value={amount}
-				onChange={e => setAmount(e.target.value)}
-			/>
+				<Input
+					type='number'
+					placeholder='Сумма'
+					value={amount}
+					onChange={e => setAmount(e.target.value)}
+				/>
 
-			<div className='flex gap-2'>
-				<Button
-					onClick={() => {
-						if (!title || !amount) return
-						onSubmit(title, Number(amount))
-						setTitle('')
-						setAmount('')
-						onClose()
-					}}
-				>
-					Добавить
-				</Button>
+				<div className='flex gap-2 pt-2'>
+					<Button className='flex-1' onClick={handleSubmit}>
+						Добавить
+					</Button>
 
-				<Button variant='outline' onClick={onClose}>
-					Отмена
-				</Button>
+					<Button variant='outline' onClick={onClose}>
+						Отмена
+					</Button>
+				</div>
 			</div>
 		</div>
 	)

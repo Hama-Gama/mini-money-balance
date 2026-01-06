@@ -34,7 +34,7 @@ export const IncomeList = () => {
 			{/* List */}
 			<div>
 				{sortedIncomes.map(income => (
-					<div className='flex items-center border-b py-2'>
+					<div className='flex items-center border-b py-2 text-xl'>
 						{/* Left — title */}
 						<div className='flex-1 flex flex-col'>
 							<span>{income.title}</span>
@@ -55,7 +55,7 @@ export const IncomeList = () => {
 						</div>
 
 						{/* Right — amount */}
-						<div className='flex-1 text-right font-medium'>
+						<div className='flex-1 text-right font-medium text-xl'>
 							{income.amount.toLocaleString('ru-RU')}
 						</div>
 					</div>
