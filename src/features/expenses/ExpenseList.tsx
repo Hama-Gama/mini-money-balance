@@ -23,9 +23,9 @@ export const ExpenseList = () => {
 	return (
 		<div className='space-y-4 pb-20'>
 			{/* Total */}
-			<div className='w-full flex justify-end'>
+			<div className='w-full flex justify-end mt-4'>
 				<button className='bg-black text-white text-xl font-bold py-1 px-5 rounded-xl'>
-					{total.toLocaleString('ru-RU')}
+					{`- ${total.toLocaleString('ru-RU')}`}
 				</button>
 			</div>
 
@@ -116,7 +116,6 @@ export const ExpenseList = () => {
 					}
 				}}
 			/>
-
 		</div>
 	)
 }

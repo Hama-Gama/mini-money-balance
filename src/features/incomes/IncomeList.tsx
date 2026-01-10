@@ -25,10 +25,12 @@ export const IncomeList = () => {
 
 	return (
 		<div className='space-y-4 pb-20'>
-			{/* Header */}
-			<div className='flex items-center justify-between'>
+			{/* Доходы */}
+			<div className='w-full flex items-center justify-between mt-4'>
 				<h2 className='text-xl font-bold'>Доходы</h2>
-				<span className='font-bold text-xl'>{total.toLocaleString('ru-RU')}</span>
+				<button className='bg-black text-white text-xl font-bold py-1 px-5 rounded-xl'>
+					{`${total.toLocaleString('ru-RU')}`}
+				</button>
 			</div>
 
 			{/* List */}
