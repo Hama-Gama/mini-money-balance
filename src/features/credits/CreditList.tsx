@@ -8,7 +8,7 @@ import { getMonthKey } from '@/shared/utils/month'
 
 
 export const CreditList = () => {
-	const { credits, addCredit, removeCredit, getTotal } = useCreditsStore()
+	const { credits, addCredit, removeCredit } = useCreditsStore()
 
 	const [openAdd, setOpenAdd] = useState(false)
 

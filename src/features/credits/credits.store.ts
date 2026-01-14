@@ -19,10 +19,16 @@ type CreditsStore = {
 	addCredit: (title: string, amount: number) => void
 	removeCredit: (id: string) => void
 	getTotal: () => number
+	getMonthlyTotal: () => number
 }
 
 export const useCreditsStore = create<CreditsStore>((set, get) => ({
 	credits: loadCredits(),
+
+	getMonthlyTotal: () => {
+		const credits = get().credits
+		return credits.reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+	},
 
 	addCredit: (title, amount) =>
 		set(state => {
