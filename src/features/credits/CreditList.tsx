@@ -1,138 +1,129 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FiPlus } from 'react-icons/fi'
 import { useCreditsStore } from './credits.store'
-import { CreditCalendar } from './CreditCalendar'
+import { AddCreditModal } from './AddCreditModal'
+import { useIncomesStore } from '@/features/incomes/incomes.store'
+import { getMonthKey } from '@/shared/utils/month'
+
 
 export const CreditList = () => {
-	const { credits, addCredit, payCredit, getTotalDebt, removeCredit } =
-		useCreditsStore()
+	const { credits, addCredit, removeCredit, getTotal } = useCreditsStore()
 
-	const [title, setTitle] = useState('')
-	const [amount, setAmount] = useState('')
-	const [showCalendar, setShowCalendar] = useState(false)
+	const [openAdd, setOpenAdd] = useState(false)
 
-	const handleAdd = () => {
-		if (!title || !amount) return
-		addCredit({
-			bankName: title,
-			totalAmount: Number(amount),
-			monthlyPayment: Math.floor(Number(amount) / 12),
-			overpayment: 0,
-			months: 12, // например, фиксируем срок в 12 месяцев
-			startDate: new Date().toISOString(), // текущая дата в ISO-формате
-		})
-		setTitle('')
-		setAmount('')
-	}
+	const total = getTotal()
 
-	const handleRemove = (id: string) => {
+	const handleDelete = (id: string) => {
 		if (!window.confirm('Удалить кредит?')) return
 		removeCredit(id)
 	}
 
+
+
+
+	const { getMonthlyTotal } = useIncomesStore()
+
+	const month = getMonthKey()
+	const incomeTotal = getMonthlyTotal(month)
+
+	// общая сумма кредитов
+	const creditsTotal = credits.reduce((sum, c) => sum + c.amount, 0)
+
+	// процент от дохода
+	const creditPercent =
+		incomeTotal > 0 ? Math.round((creditsTotal / incomeTotal) * 100) : 0
+
+	const isDanger = creditPercent > 15
+
+
+
+
+
 	return (
-		<div className='space-y-4'>
-			<div className='flex items-center justify-between'>
+		<div className='space-y-4 pb-20'>
+			{/* Кредиты */}
+			<div className='w-full flex items-center justify-between mt-4'>
 				<h2 className='text-xl font-bold'>Кредиты</h2>
-				<span className='font-semibold text-muted-foreground'>
-					Долг: {getTotalDebt().toLocaleString('ru-RU')}
-				</span>
-			</div>
 
-			{credits.map(credit => {
-				const rest = credit.totalAmount - credit.paidAmount
-				const progress =
-					credit.totalAmount > 0
-						? Math.min((credit.paidAmount / credit.totalAmount) * 100, 100)
-						: 0
+				<div className='flex flex-col items-end'>
+					<button className='bg-black text-white text-xl font-bold py-1 px-5 rounded-xl'>
+						{`- ${creditsTotal.toLocaleString('ru-RU')}`}
+					</button>
 
-				return (
-					<div key={credit.id} className='border rounded-xl p-3 space-y-2'>
-						<div className='flex justify-between font-semibold'>
-							<span>{credit.bankName}</span>
-							<span>{rest.toLocaleString('ru-RU')}</span>
-						</div>
-
-						<div className='h-2 bg-muted rounded-full overflow-hidden'>
-							<div
-								className='h-full bg-black'
-								style={{ width: `${progress}%` }}
-							/>
-						</div>
-
-						<div className='text-sm text-muted-foreground space-y-1'>
-							<div className='flex justify-between'>
-								<span>Ежемесячный платёж</span>
-								<span className='font-medium'>
-									{credit.monthlyPayment.toLocaleString('ru-RU')}
-								</span>
-							</div>
-
-							<div className='flex justify-between'>
-								<span>Общая сумма</span>
-								<span>{credit.totalAmount.toLocaleString('ru-RU')}</span>
-							</div>
-
-							{credit.overpayment > 0 && (
-								<div className='flex justify-between text-orange-600'>
-									<span>Переплата</span>
-									<span>{credit.overpayment.toLocaleString('ru-RU')}</span>
-								</div>
-							)}
-						</div>
-
-						<div className='flex gap-2'>
-							<Button
-								size='sm'
-								variant='outline'
-								onClick={() => payCredit(credit.id, credit.monthlyPayment)}
-							>
-								Оплатить
-							</Button>
-
-							<Button
-								size='sm'
-								variant='ghost'
-								onClick={() => handleRemove(credit.id)}
-							>
-								🗑
-							</Button>
-						</div>
-					</div>
-				)
-			})}
-
-			<Button
-				variant='outline'
-				className='w-full'
-				onClick={() => setShowCalendar(v => !v)}
-			>
-				{showCalendar
-					? 'Скрыть календарь платежей'
-					: 'Показать календарь платежей'}
-			</Button>
-
-			{showCalendar && (
-				<div className='pt-2'>
-					<CreditCalendar />
+					<span
+						className={`text-sm font-semibold ${
+							isDanger ? 'text-red-600' : 'text-muted-foreground'
+						}`}
+					>
+						{creditPercent}% от дохода
+					</span>
 				</div>
-			)}
-
-			<div className='flex gap-2 pt-2'>
-				<Input
-					placeholder='Банк'
-					value={title}
-					onChange={e => setTitle(e.target.value)}
-				/>
-				<Input
-					type='number'
-					placeholder='Сумма'
-					value={amount}
-					onChange={e => setAmount(e.target.value)}
-				/>
-				<Button onClick={handleAdd}>Добавить</Button>
 			</div>
+
+			{/* List */}
+			<div>
+				{credits.map(item => (
+					<div
+						key={item.id}
+						className='
+							text-xl
+							flex
+							justify-between
+							items-center
+							px-3
+							py-2
+							border-b
+							last:border-b-0
+						'
+					>
+						<span className='flex-1'>{item.title}</span>
+
+						<Button
+							size='icon'
+							variant='ghost'
+							onClick={() => handleDelete(item.id)}
+						>
+							🗑
+						</Button>
+
+						<span className='font-medium min-w-[90px] text-right'>
+							{item.amount.toLocaleString('ru-RU')}
+						</span>
+					</div>
+				))}
+			</div>
+
+			{/* Floating + */}
+			<button
+				onClick={() => setOpenAdd(true)}
+				className='
+					fixed
+					bottom-20
+					left-1/2
+					-translate-x-1/2
+					w-14
+					h-14
+					rounded-full
+					bg-black
+					text-white
+					flex
+					items-center
+					justify-center
+					shadow-lg
+					z-50
+					active:scale-95
+					transition
+				'
+			>
+				<FiPlus size={28} />
+			</button>
+
+			<AddCreditModal
+				open={openAdd}
+				onClose={() => setOpenAdd(false)}
+				onSubmit={addCredit}
+			/>
 		</div>
 	)
 }

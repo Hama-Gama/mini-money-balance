@@ -1,79 +1,59 @@
 import { create } from 'zustand'
 import { nanoid } from 'nanoid'
+import type { Credit } from './types'
+import { getMonthKey } from '@/shared/utils/month'
 
-export type Credit = {
-	id: string
-	bankName: string
-	totalAmount: number
-	monthlyPayment: number
-	paidAmount: number
-	overpayment: number
-	months: number // срок кредита в месяцах
-	startDate: string // дата начала кредита (ISO-строка)
+const STORAGE_KEY = 'credits'
+
+const loadCredits = (): Credit[] => {
+	try {
+		const data = localStorage.getItem(STORAGE_KEY)
+		return data ? JSON.parse(data) : []
+	} catch {
+		return []
+	}
 }
 
 type CreditsStore = {
 	credits: Credit[]
-	addCredit: (data: {
-		bankName: string
-		totalAmount: number
-		monthlyPayment: number
-		months: number
-		startDate: string
-		overpayment?: number
-	}) => void
-	payCredit: (id: string, amount: number) => void
+	addCredit: (title: string, amount: number) => void
 	removeCredit: (id: string) => void
-	getTotalDebt: () => number
-	getMonthlyPaymentTotal: () => number
+	getTotal: () => number
 }
 
 export const useCreditsStore = create<CreditsStore>((set, get) => ({
-	credits: [],
-	addCredit: ({
-		bankName,
-		totalAmount,
-		monthlyPayment,
-		months,
-		startDate,
-		overpayment = 0,
-	}) =>
-		set(state => ({
-			credits: [
-				...state.credits,
+	credits: loadCredits(),
+
+	addCredit: (title, amount) =>
+		set(state => {
+			const currentMonth = getMonthKey()
+
+			// 🔁 если месяц сменился — обнуляем суммы, но оставляем названия
+			const normalized = state.credits.map(c =>
+				c.month !== currentMonth ? { ...c, amount: 0, month: currentMonth } : c
+			)
+
+			const updated = [
+				...normalized,
 				{
 					id: nanoid(),
-					bankName,
-					totalAmount,
-					monthlyPayment,
-					paidAmount: 0,
-					overpayment,
-					months,
-					startDate,
+					title,
+					amount,
+					month: currentMonth,
 				},
-			],
-		})),
-	payCredit: (id, amount) =>
-		set(state => ({
-			credits: state.credits.map(c =>
-				c.id === id
-					? {
-							...c,
-							paidAmount: c.paidAmount + amount,
-							overpayment:
-								c.paidAmount + amount > c.totalAmount
-									? c.paidAmount + amount - c.totalAmount
-									: 0,
-					  }
-					: c
-			),
-		})),
+			]
+
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+
+			return { credits: updated }
+		}),
+
 	removeCredit: id =>
-		set(state => ({
-			credits: state.credits.filter(c => c.id !== id),
-		})),
-	getTotalDebt: () =>
-		get().credits.reduce((sum, c) => sum + (c.totalAmount - c.paidAmount), 0),
-	getMonthlyPaymentTotal: () =>
-		get().credits.reduce((sum, c) => sum + c.monthlyPayment, 0),
+		set(state => {
+			const updated = state.credits.filter(c => c.id !== id)
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+			return { credits: updated }
+		}),
+
+	getTotal: () => get().credits.reduce((sum, c) => sum + c.amount, 0),
 }))

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { AddIncomeDialog } from '@/features/incomes/AddIncomeDialog'
 import { useIncomesStore } from '@/features/incomes/incomes.store'
 import { getMonthKey } from '@/shared/utils/month'
-import { FiPlusCircle } from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 
 export const IncomeList = () => {
 	const { incomes, addIncome, removeIncome, getMonthlyTotal } =
@@ -74,7 +74,7 @@ export const IncomeList = () => {
 					-translate-x-1/2
 					w-14
 					h-14
-					rounded-lg
+					rounded-full
 					bg-black
 					text-white
 					flex
@@ -86,7 +86,7 @@ export const IncomeList = () => {
 					transition
 				'
 			>
-				<FiPlusCircle size={32} />
+				<FiPlus size={28} />
 			</button>
 
 			{/* Dialog */}
