@@ -12,15 +12,10 @@ export const CreditList = () => {
 
 	const [openAdd, setOpenAdd] = useState(false)
 
-	const total = getTotal()
-
 	const handleDelete = (id: string) => {
 		if (!window.confirm('Удалить кредит?')) return
 		removeCredit(id)
 	}
-
-
-
 
 	const { getMonthlyTotal } = useIncomesStore()
 
@@ -35,10 +30,6 @@ export const CreditList = () => {
 		incomeTotal > 0 ? Math.round((creditsTotal / incomeTotal) * 100) : 0
 
 	const isDanger = creditPercent > 15
-
-
-
-
 
 	return (
 		<div className='space-y-4 pb-20'>

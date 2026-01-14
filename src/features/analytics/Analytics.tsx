@@ -10,7 +10,6 @@ export const Analytics = () => {
 	// достаём методы из стора
 	const { getMonthlyTotal: incomes } = useIncomesStore()
 	const { getMonthlyTotal: savings } = useSavingsStore()
-	const { getMonthlyPaymentTotal } = useCreditsStore()
 
 	// считаем значения
 	const income = incomes(month)
