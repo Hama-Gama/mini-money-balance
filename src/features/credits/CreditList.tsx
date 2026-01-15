@@ -53,32 +53,40 @@ export const CreditList = () => {
 			</div>
 
 			{/* List */}
-			<div>
+			<div className='space-y-3'>
 				{credits.map(item => (
 					<div
 						key={item.id}
 						className='
-							text-xl
 							flex
-							justify-between
 							items-center
-							px-3
-							py-2
-							border-b
-							last:border-b-0
+							justify-between
+							rounded-xl
+							border
+							bg-white
+							px-4
+							py-3
+							text-lg
+							shadow-sm
+							transition
+							hover:shadow-md
 						'
 					>
-						<span className='flex-1'>{item.title}</span>
+						{/* Title */}
+						<span className='flex-1 font-medium'>{item.title}</span>
 
+						{/* Delete */}
 						<Button
 							size='icon'
 							variant='ghost'
+							className='mx-2 text-muted-foreground hover:text-red-600'
 							onClick={() => handleDelete(item.id)}
 						>
 							🗑
 						</Button>
 
-						<span className='font-medium min-w-[90px] text-right'>
+						{/* Amount */}
+						<span className='min-w-[90px] text-right font-semibold'>
 							{item.amount.toLocaleString('ru-RU')}
 						</span>
 					</div>

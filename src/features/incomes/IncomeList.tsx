@@ -34,12 +34,25 @@ export const IncomeList = () => {
 			</div>
 
 			{/* List */}
-			<div>
+			<div className='space-y-3'>
 				{sortedIncomes.map(income => (
-					<div className='flex items-center border-b py-2 text-xl'>
+					<div
+						key={income.id}
+						className='
+				rounded-xl
+				border
+				bg-background
+				px-4
+				py-3
+				shadow-sm
+				text-xl
+				flex
+				items-center
+			'
+					>
 						{/* Left — title */}
 						<div className='flex-1 flex flex-col'>
-							<span>{income.title}</span>
+							<span className='font-medium'>{income.title}</span>
 							<span className='text-xs text-muted-foreground'>
 								{new Date(income.createdAt).toLocaleDateString('ru-RU')}
 							</span>
@@ -57,9 +70,9 @@ export const IncomeList = () => {
 						</div>
 
 						{/* Right — amount */}
-						<div className='flex-1 text-right font-medium text-xl'>
+						<span className='min-w-[90px] text-right font-semibold'>
 							{income.amount.toLocaleString('ru-RU')}
-						</div>
+						</span>
 					</div>
 				))}
 			</div>
