@@ -53,7 +53,7 @@ export const CreditList = () => {
 			</div>
 
 			{/* List */}
-			<div className='space-y-3'>
+			<div className='space-y-2'>
 				{credits.map(item => (
 					<div
 						key={item.id}
@@ -61,11 +61,11 @@ export const CreditList = () => {
 							flex
 							items-center
 							justify-between
-							rounded-xl
+							rounded-sm
 							border
 							bg-white
 							px-4
-							py-3
+							py-1
 							text-lg
 							shadow-sm
 							transition

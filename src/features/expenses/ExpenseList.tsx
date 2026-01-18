@@ -30,7 +30,7 @@ export const ExpenseList = () => {
 			</div>
 
 			{/* Список категорий */}
-			<div className='space-y-3'>
+			<div className='space-y-2'>
 				{expenses.map(item => (
 					<div
 						key={item.id}
@@ -42,11 +42,11 @@ export const ExpenseList = () => {
 				flex
 				items-center
 				justify-between
-				rounded-xl
+				rounded-sm
 				border
 				bg-white
 				px-4
-				py-3
+				py-1
 				text-lg
 				cursor-pointer
 				shadow-sm

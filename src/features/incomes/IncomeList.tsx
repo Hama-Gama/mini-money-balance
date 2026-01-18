@@ -34,16 +34,16 @@ export const IncomeList = () => {
 			</div>
 
 			{/* List */}
-			<div className='space-y-3'>
+			<div className='space-y-2'>
 				{sortedIncomes.map(income => (
 					<div
 						key={income.id}
 						className='
-				rounded-xl
+				rounded-sm
 				border
 				bg-background
 				px-4
-				py-3
+				py-1
 				shadow-sm
 				text-xl
 				flex

@@ -8,7 +8,7 @@ export const Header = ({}: Props) => {
 	return (
 		<div className='border-b pb-6 pt-2'>
 			<div className='flex items-center justify-between'>
-				<div className='w-6 h-6 flex items-center justify-center rounded-full bg-black text-white font-semibold'>
+				<div className='w-7 h-7 flex items-center justify-center rounded-full bg-black text-white font-semibold'>
 					{weekNumber}
 				</div>
 
