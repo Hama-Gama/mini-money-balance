@@ -43,7 +43,7 @@ export const IncomeList = () => {
 				border
 				bg-background
 				px-4
-				py-1
+				py-2
 				shadow-sm
 				text-xl
 				flex

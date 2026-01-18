@@ -65,7 +65,7 @@ export const CreditList = () => {
 							border
 							bg-white
 							px-4
-							py-1
+							py-2
 							text-lg
 							shadow-sm
 							transition

@@ -46,7 +46,7 @@ export const ExpenseList = () => {
 				border
 				bg-white
 				px-4
-				py-1
+				py-2
 				text-lg
 				cursor-pointer
 				shadow-sm
