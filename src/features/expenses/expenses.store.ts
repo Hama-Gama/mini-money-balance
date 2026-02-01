@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { nanoid } from 'nanoid'
-// import type { ExpenseCategory } from '@/types'
 import type { ExpenseCategory } from './types'
 
 const STORAGE_KEY = 'expenses'
@@ -22,41 +21,53 @@ export const useExpensesStore = () => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
 	}, [expenses])
 
-
+	// добавить расход по id
 	const addExpense = (id: string, value: number) => {
 		setExpenses(prev =>
-			prev.map(e => (e.id === id ? { ...e, amount: e.amount + value } : e))
+			prev.map(e => (e.id === id ? { ...e, amount: e.amount + value } : e)),
 		)
 	}
 
+	// добавить / создать категорию по названию
+	const addExpenseByTitle = (title: string, amount: number) => {
+		setExpenses(prev => {
+			const existing = prev.find(c => c.title === title)
+
+			if (existing) {
+				return prev.map(c =>
+					c.id === existing.id ? { ...c, amount: c.amount + amount } : c,
+				)
+			}
+
+			return [
+				...prev,
+				{
+					id: nanoid(),
+					title,
+					amount,
+				},
+			]
+		})
+	}
+
+	// удалить категорию
 	const removeCategory = (id: string) => {
 		setExpenses(prev => prev.filter(e => e.id !== id))
 	}
 
-	const getTotal = () => expenses.reduce((sum, e) => sum + e.amount, 0)
+	// общий итог
+	const getTotal = () =>
+		expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
 
-
-const addExpenseByTitle = (title: string, amount: number) => {
-	setExpenses(prev => {
-		const existing = prev.find(c => c.title === title)
-
-		if (existing) {
-			return prev.map(c =>
-				c.id === existing.id ? { ...c, amount: c.amount + amount } : c
-			)
-		}
-
-		return [
-			...prev,
-			{
-				id: nanoid(),
-				title,
-				amount,
-			},
-		]
-	})
-}
-
+	// 🔴 СБРОС ВСЕХ СУММ
+	const resetAll = () => {
+		setExpenses(prev =>
+			prev.map(e => ({
+				...e,
+				amount: 0,
+			})),
+		)
+	}
 
 	return {
 		expenses,
@@ -64,9 +75,6 @@ const addExpenseByTitle = (title: string, amount: number) => {
 		addExpenseByTitle,
 		removeCategory,
 		getTotal,
+		resetAll,
 	}
 }
-
-
-
-
