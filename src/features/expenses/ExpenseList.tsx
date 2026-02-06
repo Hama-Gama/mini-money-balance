@@ -44,7 +44,7 @@ export const ExpenseList = () => {
 							setSelectedCategory(item)
 							setOpenAdd(true)
 						}}
-						className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer shadow-sm transition hover:shadow-md'
+						className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer shadow-sm transition hover:shadow-md last:mb-[50px]'
 					>
 						<span className='flex-1 font-medium'>{item.title}</span>
 
@@ -70,7 +70,7 @@ export const ExpenseList = () => {
 			{/* Reset */}
 			<Button
 				variant='outline'
-				className='w-full text-red-600 border-red-300 hover:bg-red-50'
+				className='w-fit bg-black text-white rounded-xl shadow-2xl'
 				onClick={handleReset}
 			>
 				Сбросить все расходы
