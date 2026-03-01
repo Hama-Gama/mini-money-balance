@@ -10,12 +10,14 @@ import { CreditList } from '@/features/credits/CreditList'
 import { SavingsList } from '@/features/savings/SavingsList'
 import { Analytics } from '@/features/analytics/Analytics'
 import { BottomNavigationBar } from '@/components/BottomNavigationBar'
+import { AuthGate } from '@/features/auth/AuthGate'
 
 
 export default function App() {
 	const [activeTab, setActiveTab] = useState<Tab>(1)
 
 	return (
+		<AuthGate>
 		<div className='max-w-md mx-auto p-3 space-y-4 pb-16'>
 			<Header />
 
@@ -27,5 +29,6 @@ export default function App() {
 
 			<BottomNavigationBar activeTab={activeTab} onChange={setActiveTab} />
 		</div>
+		</AuthGate>
 	)
 }

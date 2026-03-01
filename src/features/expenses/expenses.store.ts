@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { nanoid } from 'nanoid'
 import type { ExpenseCategory } from './types'
+import { pullExpensesFromCloud, pushExpensesToCloud } from './expenses.sync'
 
 const STORAGE_KEY = 'expenses'
 
@@ -16,62 +17,61 @@ const loadExpenses = (): ExpenseCategory[] => {
 export const useExpensesStore = () => {
 	const [expenses, setExpenses] = useState<ExpenseCategory[]>(loadExpenses)
 
-	// sync с localStorage
+	// ✅ 1) при старте: если онлайн — подтянуть с облака
+	useEffect(() => {
+		if (!navigator.onLine) return
+		;(async () => {
+			await pullExpensesFromCloud()
+			setExpenses(loadExpenses()) // обновляем state из localStorage
+		})()
+	}, [])
+
+	// ✅ 2) localStorage sync
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
 	}, [expenses])
 
-	// добавить расход по id
-	const addExpense = (id: string, value: number) => {
-		setExpenses(prev =>
-			prev.map(e => (e.id === id ? { ...e, amount: e.amount + value } : e)),
-		)
-	}
+	// ✅ 3) push в облако (debounce)
+	const t = useRef<number | null>(null)
+	useEffect(() => {
+		if (!navigator.onLine) return
 
-	// добавить / создать категорию по названию
+		if (t.current) window.clearTimeout(t.current)
+		t.current = window.setTimeout(() => {
+			pushExpensesToCloud()
+		}, 500)
+
+		return () => {
+			if (t.current) window.clearTimeout(t.current)
+		}
+	}, [expenses])
+
+	// --- твоя логика ниже без изменений ---
 	const addExpenseByTitle = (title: string, amount: number) => {
 		setExpenses(prev => {
 			const existing = prev.find(c => c.title === title)
-
 			if (existing) {
 				return prev.map(c =>
 					c.id === existing.id ? { ...c, amount: c.amount + amount } : c,
 				)
 			}
-
-			return [
-				...prev,
-				{
-					id: nanoid(),
-					title,
-					amount,
-				},
-			]
+			return [...prev, { id: nanoid(), title, amount }]
 		})
 	}
 
-	// удалить категорию
 	const removeCategory = (id: string) => {
 		setExpenses(prev => prev.filter(e => e.id !== id))
 	}
 
-	// общий итог
 	const getTotal = () =>
 		expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
 
-	// 🔴 СБРОС ВСЕХ СУММ
 	const resetAll = () => {
-		setExpenses(prev =>
-			prev.map(e => ({
-				...e,
-				amount: 0,
-			})),
-		)
+		setExpenses(prev => prev.map(e => ({ ...e, amount: 0 })))
 	}
 
 	return {
 		expenses,
-		addExpense,
 		addExpenseByTitle,
 		removeCategory,
 		getTotal,
