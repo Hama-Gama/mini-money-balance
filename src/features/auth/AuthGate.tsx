@@ -33,7 +33,7 @@ export const AuthGate = ({ children }: Props) => {
 			options: {
 				// можно не указывать redirectTo — Supabase сам обработает
 				// но если нужно:
-				// redirectTo: window.location.origin,
+			  redirectTo: window.location.origin,
 			},
 		})
 	}
