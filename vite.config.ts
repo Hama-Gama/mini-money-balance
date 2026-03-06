@@ -4,14 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
 export default defineConfig({
 	plugins: [
 		react(),
 		tailwindcss(),
 		VitePWA({
 			registerType: 'autoUpdate',
+
+			devOptions: {
+				enabled: true,
+			},
+
 			includeAssets: ['favicon.svg'],
+
 			manifest: {
 				name: 'Finance Tracker',
 				short_name: 'Finance',
@@ -32,8 +37,15 @@ export default defineConfig({
 					},
 				],
 			},
+
+			workbox: {
+				skipWaiting: true,
+				clientsClaim: true,
+				cleanupOutdatedCaches: true,
+			},
 		}),
 	],
+
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
