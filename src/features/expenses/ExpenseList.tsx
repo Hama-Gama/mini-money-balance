@@ -7,7 +7,8 @@ import type { ExpenseCategory } from './types'
 
 import {
 	DndContext,
-	PointerSensor,
+	MouseSensor,
+	TouchSensor,
 	closestCenter,
 	useSensor,
 	useSensors,
@@ -51,7 +52,8 @@ const SortableExpenseItem = ({
 				{...attributes}
 				{...listeners}
 				onClick={e => e.stopPropagation()}
-				className='mr-3 cursor-grab select-none text-zinc-400 active:cursor-grabbing'
+				onPointerDown={e => e.stopPropagation()}
+				className='mr-3 cursor-grab select-none text-zinc-400 active:cursor-grabbing touch-none'
 				aria-label='Перетащить'
 				title='Перетащить'
 			>
@@ -66,7 +68,7 @@ const SortableExpenseItem = ({
 				className='mx-2 text-muted-foreground hover:text-red-600'
 				onClick={e => {
 					e.stopPropagation()
-					onDelete(item.id)
+					handleDeleteSafe(onDelete, item.id)
 				}}
 			>
 				🗑
@@ -77,6 +79,10 @@ const SortableExpenseItem = ({
 			</span>
 		</div>
 	)
+}
+
+const handleDeleteSafe = (onDelete: (id: string) => void, id: string) => {
+	onDelete(id)
 }
 
 export const ExpenseList = () => {
@@ -96,9 +102,15 @@ export const ExpenseList = () => {
 	const total = getTotal()
 
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
+		useSensor(MouseSensor, {
 			activationConstraint: {
 				distance: 8,
+			},
+		}),
+		useSensor(TouchSensor, {
+			activationConstraint: {
+				delay: 180,
+				tolerance: 8,
 			},
 		}),
 	)
