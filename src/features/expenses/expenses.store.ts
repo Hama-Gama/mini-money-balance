@@ -22,7 +22,6 @@ const isExpenseArray = (value: unknown): value is ExpenseCategory[] => {
 const normalizeExpenses = (value: unknown): ExpenseCategory[] => {
 	if (isExpenseArray(value)) return value
 
-	// если вдруг в localStorage попал persist-объект вида { state: { expenses: [...] } }
 	if (
 		typeof value === 'object' &&
 		value !== null &&
@@ -55,7 +54,6 @@ export const useExpensesStore = () => {
 		loadExpenses(),
 	)
 
-	// при старте: если онлайн — подтянуть с облака
 	useEffect(() => {
 		if (!navigator.onLine) return
 		;(async () => {
@@ -68,12 +66,10 @@ export const useExpensesStore = () => {
 		})()
 	}, [])
 
-	// localStorage sync
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
 	}, [expenses])
 
-	// push в облако (debounce)
 	const t = useRef<number | null>(null)
 
 	useEffect(() => {
@@ -124,6 +120,10 @@ export const useExpensesStore = () => {
 		})
 	}
 
+	const reorderExpenses = (newExpenses: ExpenseCategory[]) => {
+		setExpenses(newExpenses)
+	}
+
 	const getTotal = () => {
 		const safeExpenses = Array.isArray(expenses) ? expenses : []
 		return safeExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
@@ -140,6 +140,7 @@ export const useExpensesStore = () => {
 		expenses,
 		addExpenseByTitle,
 		removeCategory,
+		reorderExpenses,
 		getTotal,
 		resetAll,
 	}
