@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
 import { FiPlus } from 'react-icons/fi'
@@ -7,18 +7,21 @@ import type { ExpenseCategory } from './types'
 
 import {
 	DndContext,
+	DragOverlay,
 	MouseSensor,
 	TouchSensor,
 	closestCenter,
 	useSensor,
 	useSensors,
 	type DragEndEvent,
+	type DragStartEvent,
 } from '@dnd-kit/core'
 import {
 	SortableContext,
 	useSortable,
 	verticalListSortingStrategy,
 	arrayMove,
+	defaultAnimateLayoutChanges,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -28,29 +31,35 @@ type SortableExpenseItemProps = {
 	onDelete: (id: string) => void
 }
 
-const SortableExpenseItem = ({
+type ExpenseRowProps = {
+	item: ExpenseCategory
+	onOpen: (item: ExpenseCategory) => void
+	onDelete: (id: string) => void
+	dragHandleProps?: Record<string, unknown>
+	isDragging?: boolean
+	isOverlay?: boolean
+}
+
+const ExpenseRow = ({
 	item,
 	onOpen,
 	onDelete,
-}: SortableExpenseItemProps) => {
-	const { attributes, listeners, setNodeRef, transform, transition } =
-		useSortable({ id: item.id })
-
-	const style = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-	}
-
+	dragHandleProps,
+	isDragging = false,
+	isOverlay = false,
+}: ExpenseRowProps) => {
 	return (
 		<div
-			ref={setNodeRef}
-			style={style}
-			onClick={() => onOpen(item)}
-			className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer shadow-sm transition hover:shadow-md last:mb-[50px]'
+			onClick={() => {
+				if (!isOverlay) onOpen(item)
+			}}
+			className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer shadow-sm transition hover:shadow-md'
+			style={{
+				opacity: isDragging && !isOverlay ? 0.35 : 1,
+			}}
 		>
 			<div
-				{...attributes}
-				{...listeners}
+				{...(dragHandleProps || {})}
 				onClick={e => e.stopPropagation()}
 				onPointerDown={e => e.stopPropagation()}
 				className='mr-3 cursor-grab select-none text-zinc-400 active:cursor-grabbing touch-none'
@@ -68,7 +77,7 @@ const SortableExpenseItem = ({
 				className='mx-2 text-muted-foreground hover:text-red-600'
 				onClick={e => {
 					e.stopPropagation()
-					handleDeleteSafe(onDelete, item.id)
+					onDelete(item.id)
 				}}
 			>
 				🗑
@@ -81,8 +90,42 @@ const SortableExpenseItem = ({
 	)
 }
 
-const handleDeleteSafe = (onDelete: (id: string) => void, id: string) => {
-	onDelete(id)
+const SortableExpenseItem = ({
+	item,
+	onOpen,
+	onDelete,
+}: SortableExpenseItemProps) => {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({
+		id: item.id,
+		animateLayoutChanges: args => defaultAnimateLayoutChanges(args),
+	})
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition: transition || 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+	}
+
+	return (
+		<div ref={setNodeRef} style={style}>
+			<ExpenseRow
+				item={item}
+				onOpen={onOpen}
+				onDelete={onDelete}
+				isDragging={isDragging}
+				dragHandleProps={{
+					...attributes,
+					...listeners,
+				}}
+			/>
+		</div>
+	)
 }
 
 export const ExpenseList = () => {
@@ -98,6 +141,7 @@ export const ExpenseList = () => {
 	const [openAdd, setOpenAdd] = useState(false)
 	const [selectedCategory, setSelectedCategory] =
 		useState<ExpenseCategory | null>(null)
+	const [activeId, setActiveId] = useState<string | null>(null)
 
 	const total = getTotal()
 
@@ -115,6 +159,11 @@ export const ExpenseList = () => {
 		}),
 	)
 
+	const activeItem = useMemo(
+		() => expenses.find(item => item.id === activeId) ?? null,
+		[expenses, activeId],
+	)
+
 	const handleDelete = (id: string) => {
 		if (!window.confirm('Удалить категорию?')) return
 		removeCategory(id)
@@ -126,8 +175,14 @@ export const ExpenseList = () => {
 		resetAll()
 	}
 
+	const handleDragStart = (event: DragStartEvent) => {
+		setActiveId(String(event.active.id))
+	}
+
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event
+
+		setActiveId(null)
 
 		if (!over || active.id === over.id) return
 
@@ -151,7 +206,9 @@ export const ExpenseList = () => {
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
+				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
+				onDragCancel={() => setActiveId(null)}
 			>
 				<SortableContext
 					items={expenses.map(item => item.id)}
@@ -171,6 +228,22 @@ export const ExpenseList = () => {
 						))}
 					</div>
 				</SortableContext>
+
+				<DragOverlay
+					dropAnimation={{
+						duration: 280,
+						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+					}}
+				>
+					{activeItem ? (
+						<ExpenseRow
+							item={activeItem}
+							onOpen={() => {}}
+							onDelete={handleDelete}
+							isOverlay
+						/>
+					) : null}
+				</DragOverlay>
 			</DndContext>
 
 			<Button
