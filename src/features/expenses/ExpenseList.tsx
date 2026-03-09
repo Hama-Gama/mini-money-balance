@@ -15,10 +15,10 @@ type ExpenseRowProps = {
 	item: ExpenseCategory
 	onOpen: (item: ExpenseCategory) => void
 	onDelete: (id: string) => void
-	isLast?: boolean
 	dragHandleProps?: any
 	draggableProps?: any
 	innerRef?: (element: HTMLDivElement | null) => void
+	isDragging?: boolean
 }
 
 const ExpenseRow = ({
