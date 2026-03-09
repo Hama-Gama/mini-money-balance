@@ -1,62 +1,47 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
-import { FiPlus } from 'react-icons/fi'
+import { FiPlus, FiTrash2 } from 'react-icons/fi'
 import { AddExpenseModal } from './AddExpenseModal'
 import type { ExpenseCategory } from './types'
-
 import {
-	DndContext,
-	DragOverlay,
-	MouseSensor,
-	TouchSensor,
-	closestCenter,
-	useSensor,
-	useSensors,
-	type DragEndEvent,
-	type DragStartEvent,
-} from '@dnd-kit/core'
-import {
-	SortableContext,
-	useSortable,
-	verticalListSortingStrategy,
-	arrayMove,
-	defaultAnimateLayoutChanges,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-
-type SortableExpenseItemProps = {
-	item: ExpenseCategory
-	onOpen: (item: ExpenseCategory) => void
-	onDelete: (id: string) => void
-}
+	DragDropContext,
+	Droppable,
+	Draggable,
+	type DropResult,
+} from '@hello-pangea/dnd'
 
 type ExpenseRowProps = {
 	item: ExpenseCategory
 	onOpen: (item: ExpenseCategory) => void
 	onDelete: (id: string) => void
-	dragHandleProps?: Record<string, unknown>
+	isLast?: boolean
+	dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
+	draggableProps?: React.HTMLAttributes<HTMLDivElement>
+	innerRef?: (element: HTMLDivElement | null) => void
 	isDragging?: boolean
-	isOverlay?: boolean
 }
 
 const ExpenseRow = ({
 	item,
 	onOpen,
 	onDelete,
+	isLast = false,
 	dragHandleProps,
+	draggableProps,
+	innerRef,
 	isDragging = false,
-	isOverlay = false,
 }: ExpenseRowProps) => {
 	return (
 		<div
+			ref={innerRef}
+			{...(draggableProps || {})}
 			onClick={() => {
-				if (!isOverlay) onOpen(item)
+				onOpen(item)
 			}}
-			className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer shadow-sm transition hover:shadow-md'
-			style={{
-				opacity: isDragging && !isOverlay ? 0.35 : 1,
-			}}
+			className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer transition hover:shadow-md shadow-sm'
+			style={draggableProps?.style}
+			data-dragging={isDragging ? 'true' : 'false'}
 		>
 			<div
 				{...(dragHandleProps || {})}
@@ -90,44 +75,6 @@ const ExpenseRow = ({
 	)
 }
 
-const SortableExpenseItem = ({
-	item,
-	onOpen,
-	onDelete,
-}: SortableExpenseItemProps) => {
-	const {
-		attributes,
-		listeners,
-		setNodeRef,
-		transform,
-		transition,
-		isDragging,
-	} = useSortable({
-		id: item.id,
-		animateLayoutChanges: args => defaultAnimateLayoutChanges(args),
-	})
-
-	const style = {
-		transform: CSS.Transform.toString(transform),
-		transition: transition || 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-	}
-
-	return (
-		<div ref={setNodeRef} style={style}>
-			<ExpenseRow
-				item={item}
-				onOpen={onOpen}
-				onDelete={onDelete}
-				isDragging={isDragging}
-				dragHandleProps={{
-					...attributes,
-					...listeners,
-				}}
-			/>
-		</div>
-	)
-}
-
 export const ExpenseList = () => {
 	const {
 		expenses,
@@ -141,118 +88,131 @@ export const ExpenseList = () => {
 	const [openAdd, setOpenAdd] = useState(false)
 	const [selectedCategory, setSelectedCategory] =
 		useState<ExpenseCategory | null>(null)
-	const [activeId, setActiveId] = useState<string | null>(null)
+	const [resetCountdown, setResetCountdown] = useState<number | null>(null)
+	const [openResetModal, setOpenResetModal] = useState(false)
 
 	const total = getTotal()
 
-	const sensors = useSensors(
-		useSensor(MouseSensor, {
-			activationConstraint: {
-				distance: 8,
-			},
-		}),
-		useSensor(TouchSensor, {
-			activationConstraint: {
-				delay: 180,
-				tolerance: 8,
-			},
-		}),
-	)
+	useEffect(() => {
+		if (resetCountdown === null) return
 
-	const activeItem = useMemo(
-		() => expenses.find(item => item.id === activeId) ?? null,
-		[expenses, activeId],
-	)
+		if (resetCountdown === 0) {
+			resetAll()
+			setResetCountdown(null)
+			return
+		}
+
+		const timer = window.setTimeout(() => {
+			setResetCountdown(prev => (prev === null ? null : prev - 1))
+		}, 1000)
+
+		return () => {
+			window.clearTimeout(timer)
+		}
+	}, [resetCountdown, resetAll])
 
 	const handleDelete = (id: string) => {
 		if (!window.confirm('Удалить категорию?')) return
 		removeCategory(id)
 	}
 
-	const handleReset = () => {
-		if (!window.confirm('Вы уверены? Все суммы расходов будут сброшены.'))
-			return
-		resetAll()
+	const handleResetClick = () => {
+		if (resetCountdown !== null) return
+		setOpenResetModal(true)
 	}
 
-	const handleDragStart = (event: DragStartEvent) => {
-		setActiveId(String(event.active.id))
+	const handleResetConfirm = () => {
+		setOpenResetModal(false)
+		setResetCountdown(5)
 	}
 
-	const handleDragEnd = (event: DragEndEvent) => {
-		const { active, over } = event
+	const handleCancelReset = () => {
+		setResetCountdown(null)
+	}
 
-		setActiveId(null)
+	const handleDragEnd = (result: DropResult) => {
+		if (!result.destination) return
 
-		if (!over || active.id === over.id) return
+		const oldIndex = result.source.index
+		const newIndex = result.destination.index
 
-		const oldIndex = expenses.findIndex(item => item.id === active.id)
-		const newIndex = expenses.findIndex(item => item.id === over.id)
+		if (oldIndex === newIndex) return
 
-		if (oldIndex === -1 || newIndex === -1) return
+		const updated = Array.from(expenses)
+		const [movedItem] = updated.splice(oldIndex, 1)
+		updated.splice(newIndex, 0, movedItem)
 
-		const newOrder = arrayMove(expenses, oldIndex, newIndex)
-		reorderExpenses(newOrder)
+		reorderExpenses(updated)
 	}
 
 	return (
 		<div className='space-y-4 pb-28'>
 			<div className='w-full flex justify-end mt-4'>
-				<button className='bg-black text-white text-xl font-bold py-1 px-5 rounded-xl'>
-					{`- ${total.toLocaleString('ru-RU')}`}
-				</button>
+				<div className='flex items-center gap-2'>
+					<button
+						onClick={handleResetClick}
+						className='text-zinc-500 hover:text-red-600'
+						aria-label='Сбросить все расходы'
+						title='Сбросить все расходы'
+					>
+						<FiTrash2 size={20} />
+					</button>
+
+					<button className='bg-white text-black text-xl font-bold py-1 px-5 rounded-sm shadow-sm'>
+						{`- ${total.toLocaleString('ru-RU')}`}
+					</button>
+				</div>
 			</div>
 
-			<DndContext
-				sensors={sensors}
-				collisionDetection={closestCenter}
-				onDragStart={handleDragStart}
-				onDragEnd={handleDragEnd}
-				onDragCancel={() => setActiveId(null)}
-			>
-				<SortableContext
-					items={expenses.map(item => item.id)}
-					strategy={verticalListSortingStrategy}
-				>
-					<div className='space-y-2'>
-						{expenses.map(item => (
-							<SortableExpenseItem
-								key={item.id}
-								item={item}
-								onOpen={item => {
-									setSelectedCategory(item)
-									setOpenAdd(true)
-								}}
-								onDelete={handleDelete}
-							/>
-						))}
+			{resetCountdown !== null && (
+				<div className='w-full flex justify-end'>
+					<div className='flex items-center gap-3'>
+						<span className='text-sm'>
+							Все расходы будут сброшены на 0 через {resetCountdown} сек.
+						</span>
+
+						<Button
+							onClick={handleCancelReset}
+							className='bg-black text-white rounded-sm px-3 py-1 text-sm'
+						>
+							Отмена
+						</Button>
 					</div>
-				</SortableContext>
+				</div>
+			)}
 
-				<DragOverlay
-					dropAnimation={{
-						duration: 280,
-						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-					}}
-				>
-					{activeItem ? (
-						<ExpenseRow
-							item={activeItem}
-							onOpen={() => {}}
-							onDelete={handleDelete}
-							isOverlay
-						/>
-					) : null}
-				</DragOverlay>
-			</DndContext>
-
-			<Button
-				variant='outline'
-				className='w-fit bg-black text-white rounded-xl shadow-2xl'
-				onClick={handleReset}
-			>
-				Сбросить все расходы
-			</Button>
+			<DragDropContext onDragEnd={handleDragEnd}>
+				<Droppable droppableId='expenses'>
+					{provided => (
+						<div
+							ref={provided.innerRef}
+							{...provided.droppableProps}
+							className='space-y-2'
+						>
+							{expenses.map((item, index) => (
+								<Draggable key={item.id} draggableId={item.id} index={index}>
+									{(providedDraggable, snapshot) => (
+										<ExpenseRow
+											item={item}
+											isLast={index === expenses.length - 1}
+											onOpen={item => {
+												setSelectedCategory(item)
+												setOpenAdd(true)
+											}}
+											onDelete={handleDelete}
+											innerRef={providedDraggable.innerRef}
+											draggableProps={providedDraggable.draggableProps}
+											dragHandleProps={providedDraggable.dragHandleProps}
+											isDragging={snapshot.isDragging}
+										/>
+									)}
+								</Draggable>
+							))}
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
+			</DragDropContext>
 
 			<button
 				onClick={() => {
@@ -279,6 +239,29 @@ export const ExpenseList = () => {
 					}
 				}}
 			/>
+
+			{openResetModal && (
+				<div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4'>
+					<div className='w-full max-w-sm rounded-sm bg-white p-4 shadow-lg'>
+						<div className='text-base font-semibold'>
+							Сбросить все расходы на 0?
+						</div>
+
+						<div className='mt-4 flex justify-end gap-2'>
+							<Button
+								variant='outline'
+								onClick={() => setOpenResetModal(false)}
+							>
+								Отмена
+							</Button>
+
+							<Button variant='default' onClick={handleResetConfirm}>
+								Сбросить
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
