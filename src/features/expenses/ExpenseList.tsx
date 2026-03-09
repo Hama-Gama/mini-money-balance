@@ -16,17 +16,15 @@ type ExpenseRowProps = {
 	onOpen: (item: ExpenseCategory) => void
 	onDelete: (id: string) => void
 	isLast?: boolean
-	dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
-	draggableProps?: React.HTMLAttributes<HTMLDivElement>
+	dragHandleProps?: any
+	draggableProps?: any
 	innerRef?: (element: HTMLDivElement | null) => void
-	isDragging?: boolean
 }
 
 const ExpenseRow = ({
 	item,
 	onOpen,
 	onDelete,
-	isLast = false,
 	dragHandleProps,
 	draggableProps,
 	innerRef,
@@ -194,7 +192,6 @@ export const ExpenseList = () => {
 									{(providedDraggable, snapshot) => (
 										<ExpenseRow
 											item={item}
-											isLast={index === expenses.length - 1}
 											onOpen={item => {
 												setSelectedCategory(item)
 												setOpenAdd(true)
