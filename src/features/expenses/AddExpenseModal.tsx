@@ -10,6 +10,17 @@ type Props = {
 	onSubmit: (amount: number, title?: string) => void
 }
 
+const MAX_TITLE_LENGTH = 30
+const MAX_AMOUNT_DIGITS = 9
+
+const formatAmount = (value: string) => {
+	const digits = value.replace(/\D/g, '').slice(0, MAX_AMOUNT_DIGITS)
+	if (!digits) return ''
+	return Number(digits).toLocaleString('ru-RU')
+}
+
+const getAmountDigits = (value: string) => value.replace(/\D/g, '')
+
 export const AddExpenseModal = ({
 	open,
 	category,
@@ -22,13 +33,17 @@ export const AddExpenseModal = ({
 	if (!open) return null
 
 	const handleSubmit = () => {
-		if (!amount) return
-		if (!category && !title) return
+		const amountDigits = getAmountDigits(amount)
+
+		if (!amountDigits) return
+		if (!category && !title.trim()) return
+
+		const parsedAmount = Number(amountDigits)
 
 		if (category) {
-			onSubmit(Number(amount))
+			onSubmit(parsedAmount)
 		} else {
-			onSubmit(Number(amount), title)
+			onSubmit(parsedAmount, title.trim())
 		}
 
 		setTitle('')
@@ -56,27 +71,63 @@ export const AddExpenseModal = ({
 					{category ? category.title : 'Новая категория'}
 				</h3>
 
-				{/* Название — ТОЛЬКО для новой категории */}
 				{!category && (
-					<Input
-						autoFocus
-						placeholder='Название категории'
-						value={title}
-						onChange={e => setTitle(e.target.value)}
-					/>
+					<div className='space-y-1'>
+						<Input
+							autoFocus
+							placeholder='Название категории'
+							value={title}
+							maxLength={MAX_TITLE_LENGTH}
+							onChange={e => setTitle(e.target.value)}
+							onKeyDown={e => {
+								if (
+									e.key === 'Enter' &&
+									getAmountDigits(amount) &&
+									title.trim()
+								) {
+									handleSubmit()
+								}
+							}}
+							className='text-[24px]'
+						/>
+
+						<div className='text-xs text-zinc-400 text-right'>
+							{title.length} / {MAX_TITLE_LENGTH}
+						</div>
+					</div>
 				)}
 
-				{/* СУММА — ВСЕГДА */}
-				<Input
-					autoFocus={!!category}
-					type='number'
-					placeholder='Сумма'
-					value={amount}
-					onChange={e => setAmount(e.target.value)}
-				/>
+				<div className='space-y-1'>
+					<Input
+						autoFocus={!!category}
+						type='text'
+						inputMode='numeric'
+						placeholder='Сумма'
+						value={amount}
+						onChange={e => setAmount(formatAmount(e.target.value))}
+						onKeyDown={e => {
+							if (
+								e.key === 'Enter' &&
+								getAmountDigits(amount) &&
+								(category || title.trim())
+							) {
+								handleSubmit()
+							}
+						}}
+						className='text-[24px]'
+					/>
+
+					<div className='text-xs text-zinc-400 text-right'>
+						{getAmountDigits(amount).length} / {MAX_AMOUNT_DIGITS}
+					</div>
+				</div>
 
 				<div className='flex gap-2 pt-2'>
-					<Button className='flex-1' onClick={handleSubmit}>
+					<Button
+						className='flex-1'
+						onClick={handleSubmit}
+						disabled={!getAmountDigits(amount) || (!category && !title.trim())}
+					>
 						Добавить
 					</Button>
 

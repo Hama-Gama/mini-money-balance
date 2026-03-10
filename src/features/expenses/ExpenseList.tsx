@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
-import { FiPlus, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiMoreVertical } from 'react-icons/fi'
 import { AddExpenseModal } from './AddExpenseModal'
 import type { ExpenseCategory } from './types'
 import {
@@ -19,6 +19,8 @@ type ExpenseRowProps = {
 	draggableProps?: any
 	innerRef?: (element: HTMLDivElement | null) => void
 	isDragging?: boolean
+	openMenuId: string | null
+	setOpenMenuId: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 const ExpenseRow = ({
@@ -29,15 +31,20 @@ const ExpenseRow = ({
 	draggableProps,
 	innerRef,
 	isDragging = false,
+	openMenuId,
+	setOpenMenuId,
 }: ExpenseRowProps) => {
+	const isMenuOpen = openMenuId === item.id
+
 	return (
 		<div
 			ref={innerRef}
 			{...(draggableProps || {})}
 			onClick={() => {
+				setOpenMenuId(null)
 				onOpen(item)
 			}}
-			className='flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer transition hover:shadow-md shadow-sm'
+			className='relative flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer transition hover:shadow-md shadow-sm'
 			style={draggableProps?.style}
 			data-dragging={isDragging ? 'true' : 'false'}
 		>
@@ -52,23 +59,54 @@ const ExpenseRow = ({
 				⋮⋮
 			</div>
 
-			<span className='flex-1 font-medium'>{item.title}</span>
-
-			<Button
-				size='icon'
-				variant='ghost'
-				className='mx-2 text-muted-foreground hover:text-red-600'
-				onClick={e => {
-					e.stopPropagation()
-					onDelete(item.id)
+			<span
+				className='flex-1 min-w-0 break-words font-medium'
+				title={item.title}
+				style={{
+					display: '-webkit-box',
+					WebkitLineClamp: 2,
+					WebkitBoxOrient: 'vertical',
+					overflow: 'hidden',
 				}}
 			>
-				🗑
-			</Button>
+				{item.title}
+			</span>
 
 			<span className='min-w-[90px] text-right font-semibold'>
 				{item.amount.toLocaleString('ru-RU')}
 			</span>
+
+			<div className='relative ml-2'>
+				<button
+					onClick={e => {
+						e.stopPropagation()
+						setOpenMenuId(prev => (prev === item.id ? null : item.id))
+					}}
+					className='text-zinc-500'
+					aria-label='Открыть меню'
+					title='Открыть меню'
+				>
+					<FiMoreVertical size={18} />
+				</button>
+
+				{isMenuOpen && (
+					<div
+						className='absolute right-0 top-full z-20 mt-2 min-w-[140px] rounded-sm border bg-white shadow-lg'
+						onClick={e => e.stopPropagation()}
+					>
+						<button
+							onClick={() => {
+								setOpenMenuId(null)
+								onDelete(item.id)
+							}}
+							className='flex w-full items-center gap-2 px-3 py-2 text-left text-red-600'
+						>
+							<FiTrash2 size={16} />
+							<span>Удалить</span>
+						</button>
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }
@@ -88,8 +126,10 @@ export const ExpenseList = () => {
 		useState<ExpenseCategory | null>(null)
 	const [resetCountdown, setResetCountdown] = useState<number | null>(null)
 	const [openResetModal, setOpenResetModal] = useState(false)
+	const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
 	const total = getTotal()
+	const totalMenuId = 'total-menu'
 
 	useEffect(() => {
 		if (resetCountdown === null) return
@@ -144,21 +184,51 @@ export const ExpenseList = () => {
 	}
 
 	return (
-		<div className='space-y-4 pb-28'>
+		<div
+			className='space-y-4 pb-28'
+			onClick={() => {
+				setOpenMenuId(null)
+			}}
+		>
 			<div className='w-full flex justify-end mt-4'>
-				<div className='flex items-center gap-2'>
-					<button
-						onClick={handleResetClick}
-						className='text-zinc-500 hover:text-red-600'
-						aria-label='Сбросить все расходы'
-						title='Сбросить все расходы'
-					>
-						<FiTrash2 size={20} />
-					</button>
+				<div className='relative'>
+					<div className='bg-white text-black text-xl font-bold py-1 px-5 rounded-sm shadow-sm flex items-center gap-2'>
+						<span>{`- ${total.toLocaleString('ru-RU')}`}</span>
 
-					<button className='bg-white text-black text-xl font-bold py-1 px-5 rounded-sm shadow-sm'>
-						{`- ${total.toLocaleString('ru-RU')}`}
-					</button>
+						<div className='relative'>
+							<button
+								onClick={e => {
+									e.stopPropagation()
+									setOpenMenuId(prev =>
+										prev === totalMenuId ? null : totalMenuId,
+									)
+								}}
+								className='text-zinc-500'
+								aria-label='Открыть меню'
+								title='Открыть меню'
+							>
+								<FiMoreVertical size={18} />
+							</button>
+
+							{openMenuId === totalMenuId && (
+								<div
+									className='absolute right-0 top-full z-20 mt-2 min-w-[140px] rounded-sm border bg-white shadow-lg'
+									onClick={e => e.stopPropagation()}
+								>
+									<button
+										onClick={() => {
+											setOpenMenuId(null)
+											handleResetClick()
+										}}
+										className='flex w-full items-center gap-2 px-3 py-2 text-left text-red-600'
+									>
+										<FiTrash2 size={16} />
+										<span>Удалить</span>
+									</button>
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -201,6 +271,8 @@ export const ExpenseList = () => {
 											draggableProps={providedDraggable.draggableProps}
 											dragHandleProps={providedDraggable.dragHandleProps}
 											isDragging={snapshot.isDragging}
+											openMenuId={openMenuId}
+											setOpenMenuId={setOpenMenuId}
 										/>
 									)}
 								</Draggable>
@@ -232,7 +304,7 @@ export const ExpenseList = () => {
 					if (selectedCategory) {
 						addExpenseByTitle(selectedCategory.title, amount)
 					} else if (title) {
-						addExpenseByTitle(title, amount)
+						addExpenseByTitle(title.trim().slice(0, 30), amount)
 					}
 				}}
 			/>
