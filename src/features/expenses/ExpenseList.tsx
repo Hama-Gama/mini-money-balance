@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
-import { FiPlus, FiTrash2, FiMoreVertical } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiMoreVertical, FiEdit2 } from 'react-icons/fi'
 import { AddExpenseModal } from './AddExpenseModal'
 import type { ExpenseCategory } from './types'
 import {
@@ -15,6 +15,7 @@ type ExpenseRowProps = {
 	item: ExpenseCategory
 	onOpen: (item: ExpenseCategory) => void
 	onDelete: (id: string) => void
+	onEdit: (item: ExpenseCategory) => void
 	dragHandleProps?: any
 	draggableProps?: any
 	innerRef?: (element: HTMLDivElement | null) => void
@@ -27,6 +28,7 @@ const ExpenseRow = ({
 	item,
 	onOpen,
 	onDelete,
+	onEdit,
 	dragHandleProps,
 	draggableProps,
 	innerRef,
@@ -91,9 +93,20 @@ const ExpenseRow = ({
 
 				{isMenuOpen && (
 					<div
-						className='absolute right-0 top-full z-20 mt-2 min-w-[140px] rounded-sm border bg-white shadow-lg'
+						className='absolute right-0 top-full z-20 mt-2 min-w-[160px] rounded-sm border bg-white shadow-lg'
 						onClick={e => e.stopPropagation()}
 					>
+						<button
+							onClick={() => {
+								setOpenMenuId(null)
+								onEdit(item)
+							}}
+							className='flex w-full items-center gap-2 px-3 py-2 text-left'
+						>
+							<FiEdit2 size={16} />
+							<span>Редактировать</span>
+						</button>
+
 						<button
 							onClick={() => {
 								setOpenMenuId(null)
@@ -116,6 +129,7 @@ export const ExpenseList = () => {
 		expenses,
 		addExpenseByTitle,
 		removeCategory,
+		renameCategory,
 		getTotal,
 		resetAll,
 		reorderExpenses,
@@ -123,6 +137,8 @@ export const ExpenseList = () => {
 
 	const [openAdd, setOpenAdd] = useState(false)
 	const [selectedCategory, setSelectedCategory] =
+		useState<ExpenseCategory | null>(null)
+	const [editingCategory, setEditingCategory] =
 		useState<ExpenseCategory | null>(null)
 	const [resetCountdown, setResetCountdown] = useState<number | null>(null)
 	const [openResetModal, setOpenResetModal] = useState(false)
@@ -152,6 +168,12 @@ export const ExpenseList = () => {
 	const handleDelete = (id: string) => {
 		if (!window.confirm('Удалить категорию?')) return
 		removeCategory(id)
+	}
+
+	const handleEdit = (item: ExpenseCategory) => {
+		setSelectedCategory(null)
+		setEditingCategory(item)
+		setOpenAdd(true)
 	}
 
 	const handleResetClick = () => {
@@ -263,10 +285,12 @@ export const ExpenseList = () => {
 										<ExpenseRow
 											item={item}
 											onOpen={item => {
+												setEditingCategory(null)
 												setSelectedCategory(item)
 												setOpenAdd(true)
 											}}
 											onDelete={handleDelete}
+											onEdit={handleEdit}
 											innerRef={providedDraggable.innerRef}
 											draggableProps={providedDraggable.draggableProps}
 											dragHandleProps={providedDraggable.dragHandleProps}
@@ -285,6 +309,7 @@ export const ExpenseList = () => {
 
 			<button
 				onClick={() => {
+					setEditingCategory(null)
 					setSelectedCategory(null)
 					setOpenAdd(true)
 				}}
@@ -296,12 +321,16 @@ export const ExpenseList = () => {
 			<AddExpenseModal
 				open={openAdd}
 				category={selectedCategory}
+				editCategory={editingCategory}
 				onClose={() => {
 					setOpenAdd(false)
 					setSelectedCategory(null)
+					setEditingCategory(null)
 				}}
 				onSubmit={(amount, title) => {
-					if (selectedCategory) {
+					if (editingCategory && title) {
+						renameCategory(editingCategory.id, title.trim().slice(0, 30))
+					} else if (selectedCategory) {
 						addExpenseByTitle(selectedCategory.title, amount)
 					} else if (title) {
 						addExpenseByTitle(title.trim().slice(0, 30), amount)

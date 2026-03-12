@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { ExpenseCategory } from './types'
@@ -6,6 +6,7 @@ import type { ExpenseCategory } from './types'
 type Props = {
 	open: boolean
 	category: ExpenseCategory | null
+	editCategory?: ExpenseCategory | null
 	onClose: () => void
 	onSubmit: (amount: number, title?: string) => void
 }
@@ -24,15 +25,38 @@ const getAmountDigits = (value: string) => value.replace(/\D/g, '')
 export const AddExpenseModal = ({
 	open,
 	category,
+	editCategory = null,
 	onClose,
 	onSubmit,
 }: Props) => {
 	const [title, setTitle] = useState('')
 	const [amount, setAmount] = useState('')
 
+	useEffect(() => {
+		if (!open) return
+
+		if (editCategory) {
+			setTitle(editCategory.title)
+			setAmount('')
+			return
+		}
+
+		setTitle('')
+		setAmount('')
+	}, [open, editCategory])
+
 	if (!open) return null
 
+	const isEditMode = !!editCategory
+
 	const handleSubmit = () => {
+		if (isEditMode) {
+			if (!title.trim()) return
+			onSubmit(0, title.trim())
+			onClose()
+			return
+		}
+
 		const amountDigits = getAmountDigits(amount)
 
 		if (!amountDigits) return
@@ -68,10 +92,14 @@ export const AddExpenseModal = ({
 				'
 			>
 				<h3 className='text-lg font-semibold'>
-					{category ? category.title : 'Новая категория'}
+					{isEditMode
+						? 'Редактировать категорию'
+						: category
+							? category.title
+							: 'Новая категория'}
 				</h3>
 
-				{!category && (
+				{(!category || isEditMode) && (
 					<div className='space-y-1'>
 						<Input
 							autoFocus
@@ -80,8 +108,12 @@ export const AddExpenseModal = ({
 							maxLength={MAX_TITLE_LENGTH}
 							onChange={e => setTitle(e.target.value)}
 							onKeyDown={e => {
+								if (e.key === 'Enter' && isEditMode && title.trim()) {
+									handleSubmit()
+								}
 								if (
 									e.key === 'Enter' &&
+									!isEditMode &&
 									getAmountDigits(amount) &&
 									title.trim()
 								) {
@@ -97,38 +129,44 @@ export const AddExpenseModal = ({
 					</div>
 				)}
 
-				<div className='space-y-1'>
-					<Input
-						autoFocus={!!category}
-						type='text'
-						inputMode='numeric'
-						placeholder='Сумма'
-						value={amount}
-						onChange={e => setAmount(formatAmount(e.target.value))}
-						onKeyDown={e => {
-							if (
-								e.key === 'Enter' &&
-								getAmountDigits(amount) &&
-								(category || title.trim())
-							) {
-								handleSubmit()
-							}
-						}}
-						className='text-[24px]'
-					/>
+				{!isEditMode && (
+					<div className='space-y-1'>
+						<Input
+							autoFocus={!!category}
+							type='text'
+							inputMode='numeric'
+							placeholder='Сумма'
+							value={amount}
+							onChange={e => setAmount(formatAmount(e.target.value))}
+							onKeyDown={e => {
+								if (
+									e.key === 'Enter' &&
+									getAmountDigits(amount) &&
+									(category || title.trim())
+								) {
+									handleSubmit()
+								}
+							}}
+							className='text-[24px]'
+						/>
 
-					<div className='text-xs text-zinc-400 text-right'>
-						{getAmountDigits(amount).length} / {MAX_AMOUNT_DIGITS}
+						<div className='text-xs text-zinc-400 text-right'>
+							{getAmountDigits(amount).length} / {MAX_AMOUNT_DIGITS}
+						</div>
 					</div>
-				</div>
+				)}
 
 				<div className='flex gap-2 pt-2'>
 					<Button
 						className='flex-1'
 						onClick={handleSubmit}
-						disabled={!getAmountDigits(amount) || (!category && !title.trim())}
+						disabled={
+							isEditMode
+								? !title.trim()
+								: !getAmountDigits(amount) || (!category && !title.trim())
+						}
 					>
-						Добавить
+						{isEditMode ? 'Сохранить' : 'Добавить'}
 					</Button>
 
 					<Button variant='outline' onClick={onClose}>

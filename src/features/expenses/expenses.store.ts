@@ -120,6 +120,18 @@ export const useExpensesStore = () => {
 		})
 	}
 
+	const renameCategory = (id: string, newTitle: string) => {
+		const normalizedTitle = newTitle.trim()
+		if (!normalizedTitle) return
+
+		setExpenses(prev => {
+			const safePrev = Array.isArray(prev) ? prev : []
+			return safePrev.map(item =>
+				item.id === id ? { ...item, title: normalizedTitle } : item,
+			)
+		})
+	}
+
 	const reorderExpenses = (newExpenses: ExpenseCategory[]) => {
 		setExpenses(newExpenses)
 	}
@@ -140,6 +152,7 @@ export const useExpensesStore = () => {
 		expenses,
 		addExpenseByTitle,
 		removeCategory,
+		renameCategory,
 		reorderExpenses,
 		getTotal,
 		resetAll,
