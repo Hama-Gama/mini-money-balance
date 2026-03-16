@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useExpensesStore } from '@/features/expenses/expenses.store'
 import { FiPlus, FiTrash2, FiMoreVertical, FiEdit2 } from 'react-icons/fi'
@@ -11,118 +11,129 @@ import {
 	type DropResult,
 } from '@hello-pangea/dnd'
 
+const reorder = (
+	list: ExpenseCategory[],
+	startIndex: number,
+	endIndex: number,
+) => {
+	const result = Array.from(list)
+	const [removed] = result.splice(startIndex, 1)
+	result.splice(endIndex, 0, removed)
+	return result
+}
+
 type ExpenseRowProps = {
 	item: ExpenseCategory
 	onOpen: (item: ExpenseCategory) => void
 	onDelete: (id: string) => void
 	onEdit: (item: ExpenseCategory) => void
 	dragHandleProps?: any
-	draggableProps?: any
-	innerRef?: (element: HTMLDivElement | null) => void
 	isDragging?: boolean
 	openMenuId: string | null
 	setOpenMenuId: React.Dispatch<React.SetStateAction<string | null>>
 }
 
-const ExpenseRow = ({
-	item,
-	onOpen,
-	onDelete,
-	onEdit,
-	dragHandleProps,
-	draggableProps,
-	innerRef,
-	isDragging = false,
-	openMenuId,
-	setOpenMenuId,
-}: ExpenseRowProps) => {
-	const isMenuOpen = openMenuId === item.id
+const ExpenseRow = memo(
+	({
+		item,
+		onOpen,
+		onDelete,
+		onEdit,
+		dragHandleProps,
+		isDragging = false,
+		openMenuId,
+		setOpenMenuId,
+	}: ExpenseRowProps) => {
+		const isMenuOpen = openMenuId === item.id
 
-	return (
-		<div
-			ref={innerRef}
-			{...(draggableProps || {})}
-			onClick={() => {
-				setOpenMenuId(null)
-				onOpen(item)
-			}}
-			className='relative flex items-center justify-between rounded-sm border bg-white px-4 py-2 text-lg cursor-pointer transition hover:shadow-md shadow-sm'
-			style={draggableProps?.style}
-			data-dragging={isDragging ? 'true' : 'false'}
-		>
+		return (
 			<div
-				{...(dragHandleProps || {})}
-				onClick={e => e.stopPropagation()}
-				onPointerDown={e => e.stopPropagation()}
-				className='mr-3 cursor-grab select-none text-zinc-400 active:cursor-grabbing touch-none'
-				aria-label='Перетащить'
-				title='Перетащить'
-			>
-				⋮⋮
-			</div>
-
-			<span
-				className='flex-1 min-w-0 break-words font-medium'
-				title={item.title}
-				style={{
-					display: '-webkit-box',
-					WebkitLineClamp: 2,
-					WebkitBoxOrient: 'vertical',
-					overflow: 'hidden',
+				onClick={() => {
+					setOpenMenuId(null)
+					onOpen(item)
 				}}
+				className={`relative flex items-center justify-between rounded-sm border px-4 py-2 text-lg cursor-pointer shadow-sm hover:shadow-md ${
+					isDragging ? 'bg-zinc-100' : 'bg-white'
+				} ${isDragging ? '' : 'transition'} ${isMenuOpen ? 'z-30' : 'z-0'}`}
+				style={{
+					opacity: isDragging ? 0.98 : 1,
+				}}
+				data-dragging={isDragging ? 'true' : 'false'}
 			>
-				{item.title}
-			</span>
-
-			<span className='min-w-[90px] text-right font-semibold'>
-				{item.amount.toLocaleString('ru-RU')}
-			</span>
-
-			<div className='relative ml-2'>
-				<button
-					onClick={e => {
-						e.stopPropagation()
-						setOpenMenuId(prev => (prev === item.id ? null : item.id))
-					}}
-					className='text-zinc-500'
-					aria-label='Открыть меню'
-					title='Открыть меню'
+				<div
+					{...(dragHandleProps || {})}
+					onClick={e => e.stopPropagation()}
+					onPointerDown={e => e.stopPropagation()}
+					className='mr-3 cursor-grab select-none text-zinc-400 active:cursor-grabbing touch-none'
+					aria-label='Перетащить'
+					title='Перетащить'
 				>
-					<FiMoreVertical size={18} />
-				</button>
+					⋮⋮
+				</div>
 
-				{isMenuOpen && (
-					<div
-						className='absolute right-0 top-full z-20 mt-2 min-w-[160px] rounded-sm border bg-white shadow-lg'
-						onClick={e => e.stopPropagation()}
+				<span
+					className='flex-1 min-w-0 break-words font-medium'
+					title={item.title}
+					style={{
+						display: '-webkit-box',
+						WebkitLineClamp: 2,
+						WebkitBoxOrient: 'vertical',
+						overflow: 'hidden',
+					}}
+				>
+					{item.title}
+				</span>
+
+				<span className='min-w-[90px] text-right font-semibold'>
+					{item.amount.toLocaleString('ru-RU')}
+				</span>
+
+				<div className='relative ml-2'>
+					<button
+						onClick={e => {
+							e.stopPropagation()
+							setOpenMenuId(prev => (prev === item.id ? null : item.id))
+						}}
+						className='text-zinc-500'
+						aria-label='Открыть меню'
+						title='Открыть меню'
 					>
-						<button
-							onClick={() => {
-								setOpenMenuId(null)
-								onEdit(item)
-							}}
-							className='flex w-full items-center gap-2 px-3 py-2 text-left'
-						>
-							<FiEdit2 size={16} />
-							<span>Редактировать</span>
-						</button>
+						<FiMoreVertical size={18} />
+					</button>
 
-						<button
-							onClick={() => {
-								setOpenMenuId(null)
-								onDelete(item.id)
-							}}
-							className='flex w-full items-center gap-2 px-3 py-2 text-left text-red-600'
+					{isMenuOpen && (
+						<div
+							className='absolute right-0 top-full z-50 mt-2 min-w-[160px] rounded-sm border bg-white shadow-lg'
+							onClick={e => e.stopPropagation()}
 						>
-							<FiTrash2 size={16} />
-							<span>Удалить</span>
-						</button>
-					</div>
-				)}
+							<button
+								onClick={() => {
+									setOpenMenuId(null)
+									onEdit(item)
+								}}
+								className='flex w-full items-center gap-2 px-3 py-2 text-left'
+							>
+								<FiEdit2 size={16} />
+								<span>Редактировать</span>
+							</button>
+
+							<button
+								onClick={() => {
+									setOpenMenuId(null)
+									onDelete(item.id)
+								}}
+								className='flex w-full items-center gap-2 px-3 py-2 text-left text-red-600'
+							>
+								<FiTrash2 size={16} />
+								<span>Удалить</span>
+							</button>
+						</div>
+					)}
+				</div>
 			</div>
-		</div>
-	)
-}
+		)
+	},
+)
 
 export const ExpenseList = () => {
 	const {
@@ -193,16 +204,20 @@ export const ExpenseList = () => {
 	const handleDragEnd = (result: DropResult) => {
 		if (!result.destination) return
 
-		const oldIndex = result.source.index
-		const newIndex = result.destination.index
+		if (
+			result.destination.droppableId === result.source.droppableId &&
+			result.destination.index === result.source.index
+		) {
+			return
+		}
 
-		if (oldIndex === newIndex) return
+		const items = reorder(
+			expenses,
+			result.source.index,
+			result.destination.index,
+		)
 
-		const updated = Array.from(expenses)
-		const [movedItem] = updated.splice(oldIndex, 1)
-		updated.splice(newIndex, 0, movedItem)
-
-		reorderExpenses(updated)
+		reorderExpenses(items)
 	}
 
 	return (
@@ -271,7 +286,10 @@ export const ExpenseList = () => {
 				</div>
 			)}
 
-			<DragDropContext onDragEnd={handleDragEnd}>
+			<DragDropContext
+				onDragStart={() => setOpenMenuId(null)}
+				onDragEnd={handleDragEnd}
+			>
 				<Droppable droppableId='expenses'>
 					{provided => (
 						<div
@@ -279,28 +297,51 @@ export const ExpenseList = () => {
 							{...provided.droppableProps}
 							className='space-y-2'
 						>
-							{expenses.map((item, index) => (
-								<Draggable key={item.id} draggableId={item.id} index={index}>
-									{(providedDraggable, snapshot) => (
-										<ExpenseRow
-											item={item}
-											onOpen={item => {
-												setEditingCategory(null)
-												setSelectedCategory(item)
-												setOpenAdd(true)
-											}}
-											onDelete={handleDelete}
-											onEdit={handleEdit}
-											innerRef={providedDraggable.innerRef}
-											draggableProps={providedDraggable.draggableProps}
-											dragHandleProps={providedDraggable.dragHandleProps}
-											isDragging={snapshot.isDragging}
-											openMenuId={openMenuId}
-											setOpenMenuId={setOpenMenuId}
-										/>
-									)}
-								</Draggable>
-							))}
+							{expenses.map((item, index) => {
+								const isMenuOpen = openMenuId === item.id
+
+								return (
+									<Draggable
+										key={item.id}
+										draggableId={item.id}
+										index={index}
+										disableInteractiveElementBlocking
+									>
+										{(providedDraggable, snapshot) => (
+											<div
+												ref={providedDraggable.innerRef}
+												{...providedDraggable.draggableProps}
+												className='relative'
+												style={{
+													userSelect: 'none',
+													willChange: 'transform',
+													zIndex: snapshot.isDragging
+														? 40
+														: isMenuOpen
+															? 30
+															: 'auto',
+													...providedDraggable.draggableProps.style,
+												}}
+											>
+												<ExpenseRow
+													item={item}
+													onOpen={item => {
+														setEditingCategory(null)
+														setSelectedCategory(item)
+														setOpenAdd(true)
+													}}
+													onDelete={handleDelete}
+													onEdit={handleEdit}
+													dragHandleProps={providedDraggable.dragHandleProps}
+													isDragging={snapshot.isDragging}
+													openMenuId={openMenuId}
+													setOpenMenuId={setOpenMenuId}
+												/>
+											</div>
+										)}
+									</Draggable>
+								)
+							})}
 							{provided.placeholder}
 						</div>
 					)}
