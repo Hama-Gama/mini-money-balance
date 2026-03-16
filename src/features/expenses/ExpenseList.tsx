@@ -387,16 +387,19 @@ export const ExpenseList = () => {
 						</div>
 
 						<div className='mt-4 flex justify-end gap-2'>
-							<Button
-								variant='outline'
+							<button
+								onClick={handleResetConfirm}
+								className='px-4 py-2 rounded-sm border border-red-600 text-red-600 bg-white'
+							>
+								Сбросить
+							</button>
+
+							<button
 								onClick={() => setOpenResetModal(false)}
+								className='px-4 py-2 rounded-sm bg-black text-white'
 							>
 								Отмена
-							</Button>
-
-							<Button variant='default' onClick={handleResetConfirm}>
-								Сбросить
-							</Button>
+							</button>
 						</div>
 					</div>
 				</div>
