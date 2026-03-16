@@ -8,9 +8,28 @@ type Props = {
 export const AuthGate = ({ children }: Props) => {
 	const [loading, setLoading] = useState(true)
 	const [isAuthed, setIsAuthed] = useState(false)
+	const [isOffline, setIsOffline] = useState(!navigator.onLine)
 
 	useEffect(() => {
+		const handleOnline = () => setIsOffline(false)
+		const handleOffline = () => setIsOffline(true)
+
+		window.addEventListener('online', handleOnline)
+		window.addEventListener('offline', handleOffline)
+
+		if (!navigator.onLine) {
+			setLoading(false)
+
+			return () => {
+				window.removeEventListener('online', handleOnline)
+				window.removeEventListener('offline', handleOffline)
+			}
+		}
+
+		let isMounted = true
+
 		supabase.auth.getSession().then(({ data }) => {
+			if (!isMounted) return
 			setIsAuthed(!!data.session)
 			setLoading(false)
 		})
@@ -20,7 +39,10 @@ export const AuthGate = ({ children }: Props) => {
 		})
 
 		return () => {
+			isMounted = false
 			sub.subscription.unsubscribe()
+			window.removeEventListener('online', handleOnline)
+			window.removeEventListener('offline', handleOffline)
 		}
 	}, [])
 
@@ -33,10 +55,9 @@ export const AuthGate = ({ children }: Props) => {
 		})
 	}
 
-	if (loading) return null
-
-	const isOffline = !navigator.onLine
 	if (isOffline) return <>{children}</>
+
+	if (loading) return null
 
 	if (!isAuthed) {
 		return (
